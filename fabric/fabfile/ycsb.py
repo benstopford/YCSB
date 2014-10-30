@@ -1,11 +1,13 @@
 import re, os, tempfile
 
+from fabric.api import run as therun
 from fabric.api import *
 from fabric.colors import green, blue, red
 from fabric.contrib.console import confirm
 
 from conf import workloads
 from fabfile.helpers import get_db, get_workload, _at, get_outfilename, base_time, almost_nothing, get_properties, determine_file
+
 
 def _ycsbloadcmd(database, clientno, timestamp, target=None):
     totalclients = len(env.roledefs['client'])
@@ -57,6 +59,7 @@ def _totalclients():
 @roles('client')
 def load(db, target=None):
     """Starts loading of data to the database"""
+    setSSH() 
     timestamp = base_time()
     print green(timestamp, bold = True)
     clientno = _client_no()
@@ -85,6 +88,7 @@ def run_workload(db, workload, target=None):
 @roles('client')
 def status(db):
     """ Shows status of the currently running YCSBs """
+    setSSH()
     with almost_nothing():
         database = get_db(db)
         dir_name = database['home']
@@ -136,7 +140,7 @@ def get_log(db, regex='.*', do=False):
     """ Download *.err and *.out logs satisfying the regex to be transferred
     OR transfer all logs in the batch dir
     """
-
+    setSSH()
     database = get_db(db)
     with almost_nothing():
         cn = _client_no() + 1
@@ -214,10 +218,11 @@ def get_log(db, regex='.*', do=False):
 @roles('client')
 def kill(force=False):
     """Kills YCSB processes"""
+    setSSH()
     with settings(warn_only=True):
         run('ps -f -C java')
         if force or confirm(red("Do you want to kill Java on the client?")):
-            run('killall java')
+            run('sudo killall java')
 
 @roles('client')
 def clean_logs(force=False, db=None):
@@ -236,12 +241,19 @@ def _build_and_upload():
 
 @roles('all_client')
 def deploy():
+    setSSH()
     """Builds and deploys YCSB to the clients"""
+    print "running maven build"
     _build_and_upload()
     client1 = env.roledefs['client'][0]
-    run('scp %s:ycsb.tar.gz .' % client1)
+    print "got this far at least"
+    therun('scp -i %s %s:ycsb.tar.gz .' % (env.key_filename,client1))
     with cd('/opt'):
-        run('ln -sf ycsb-0.1.4 ycsb')
-        run('rm -rf ycsb-0.1.4')
-        run('tar xzvf ~/ycsb.tar.gz')
-        
+        run('sudo ln -sf ycsb-0.1.4 ycsb')
+        run('sudo rm -rf ycsb-0.1.4')
+        run('sudo tar xzvf ~/ycsb.tar.gz')
+ 
+def setSSH():
+    env.user = 'ec2-user'
+    env.key_filename = '/home/ec2-user/ycsb/YCSB-master/datalabs-dsc1.pem'
+       

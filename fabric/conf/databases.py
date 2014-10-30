@@ -75,10 +75,10 @@ sleep 3; \
 
     'cassandra' : {
         'name': 'cassandra',
-        'home': '/root/ycsb',
-        'command': 'cassandra-hector',
+        'home': '/home/ec2-user/ycsb',
+        'command': 'cassandra-cql',
         'properties': {
-            'hosts': 'e1.citrusleaf.local,e2.citrusleaf.local,e3.citrusleaf.local,e4.citrusleaf.local',
+            'hosts': '172.31.35.31,172.31.35.30,172.31.35.32',
             'cassandra.readconsistencylevel': 'ONE',
             'cassandra.writeconsistencylevel': 'ONE', #ALL-sync/ONE-async
         },

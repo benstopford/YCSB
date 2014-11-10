@@ -165,7 +165,7 @@ def get_log(db, regex='.*', do=False):
                     # unpacking to temp dir
                     print blue('c%s unpacking ...' % cn)
                     local('tar -xvf %s -C %s' % (bz2_full_local, tempdir_local))
-                    print blue('c%s moving to current dir ...' % cn)
+                    print blue('c%s moving to current dir %s' % (cn, tempdir_local))
                     # remove the old version of the dir
                     # TODO maybe use versioning?
                     local('rm -rf %s' % dir_local)
@@ -204,9 +204,9 @@ def get_log(db, regex='.*', do=False):
                     # unpacked ok, remove local bz2
                     #local('rm -f %s' % bz2err_full_local)
                     #local('rm -f %s' % bz2out_full_local)
-                    print blue('c%s moving to current dir ...' % cn)
-                    local('mv %s/%s.err ./%s-c%s.err' % (tempdir_local, f0, f0, cn))
-                    local('mv %s/%s.out ./%s-c%s.out' % (tempdir_local, f0, f0, cn))
+                    print blue('c%s moving to current dir %s' % (cn,tempdir_local))
+                    local('mv %s/%s.err ./logs/%s-c%s.err' % (tempdir_local, f0, f0, cn))
+                    local('mv %s/%s.out ./logs/%s-c%s.out' % (tempdir_local, f0, f0, cn))
                     local('rm -rf %s' % tempdir_local)
 
 

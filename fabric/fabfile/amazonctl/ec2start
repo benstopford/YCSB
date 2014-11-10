@@ -1,0 +1,70 @@
+#!/bin/sh
+
+# Script used to create a cassandra cluster with a number of YCSB nodes
+
+CASSANDRA_NODE_COUNT=3
+YCSB_NODE_COUNT=6
+
+YCSB_AMI="ami-6e7bd919"
+CAS_AMI="ami-7f33cd08"
+
+
+tagInsancesForAmi(){
+    AMI=$1
+    TAG_NAME=$2
+
+    # Get the instance ids of the images we just started
+    IDS=""
+    while [[ -z "$IDS" ]]
+    do
+        IDS=`aws ec2 describe-instances --filters "Name=image-id,Values=$AMI" "Name=instance-state-name,Values=pending,running" | grep INSTANCES | awk {'print $8'}`
+        printf "."
+        sleep 1
+    done
+    echo "."
+
+    # Add tag to each instance so we can identify it
+    for ID in $IDS
+    do
+        aws ec2 create-tags --resources $ID --tags Key=Name,Value=$TAG_NAME
+        echo "Created $TAG_NAME tag for $ID"
+    done
+}
+
+
+startCassandraNodes(){
+    echo "**STARTING CASSANDRA CLUSTER**"
+
+    # Start instances
+
+    OUT=`aws ec2 run-instances --image-id $CAS_AMI --count $CASSANDRA_NODE_COUNT --instance-type m3.medium --key-name datalabs-dsc1 --security-groups my-eu-sec-group --user-data "--clustername datalabs-cassandra --totalnodes $CASSANDRA_NODE_COUNT --version community"`
+
+    tagInsancesForAmi $CAS_AMI "DSC"
+
+
+    OPS=`aws ec2 describe-instances --filters "Name=image-id,Values=$CAS_AMI" "Name=instance-state-name,Values=pending,running" "Name=launch-index,Values=0"| grep ASSOCI | awk {'print $3'} | sort | uniq`
+    echo "OPS centre can be found at http://$OPS:8888"
+
+    ECHO "Created cassandra instances"
+}
+
+startYcsbNodes(){
+    echo "**STARTING YCSB INSTANCES**"
+
+
+
+    OUT=`aws ec2 run-instances --image-id $YCSB_AMI --count $YCSB_NODE_COUNT --instance-type t2.micro --key-name datalabs-dsc1 --security-groups my-eu-sec-group`
+
+    tagInsancesForAmi $YCSB_AMI "YCSB"
+}
+
+startCassandraNodes
+startYcsbNodes
+echo "All services have been started."
+
+
+
+
+
+
+

@@ -5,19 +5,17 @@ TIME_DURATION = 60*40 #40 Minutes
 data = {    #global YSCB properties
     #'recordcount': 200000000,  #SSD
     #'recordcount': 500000000,  #SSD
-    'recordcount': 1000000,    #RAM
+    'recordcount':  10000,    #RAM
     'fieldcount': 10,
     'fieldlength': 10,
     #'fieldnameprefix': 'f',
-    #'operationcount': 10000000,
-    #'operationcount': 200000000,    #>10min for Aerospike and Couchbase
-    #'operationcount': 50000000,    #>10min for Cassandra and MongoDB
-    
-    'operationcount': 1000000*TIME_DURATION, # 40min at 1000k
+    'operationcount': 10000,
+
+    # 'operationcount': 100000*TIME_DURATION, # 40min at 1000k
     'maxexecutiontime': TIME_DURATION,      # 40min
     #'maxexecutiontime': 600,      # 10min
 
-    'threadcount': 32,
+    'threadcount': 10,
     'workload': 'com.yahoo.ycsb.workloads.CoreWorkload',
     'exportmeasurementsinterval': 30000,
     #'warmupexecutiontime': 60000,
@@ -25,7 +23,7 @@ data = {    #global YSCB properties
     #'insertretrycount': 1000000000, #for Couchbase2 200M load
     'insertretrycount': 10,
 
-    'ignoreinserterrors': 'true',
+    'ignoreinserterrors': 'false',
     'readretrycount': 1000,
     'updateretrycount': 1000,
     'measurementtype': 'timeseries',

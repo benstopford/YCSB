@@ -18,16 +18,15 @@
 package com.yahoo.ycsb.db;
 
 import com.yahoo.ycsb.*;
-
-import java.util.*;
-import java.nio.ByteBuffer;
-
-import org.apache.thrift.transport.TTransport;
+import org.apache.cassandra.thrift.*;
+import org.apache.thrift.protocol.TBinaryProtocol;
+import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TFramedTransport;
 import org.apache.thrift.transport.TSocket;
-import org.apache.thrift.protocol.TProtocol;
-import org.apache.thrift.protocol.TBinaryProtocol;
-import org.apache.cassandra.thrift.*;
+import org.apache.thrift.transport.TTransport;
+
+import java.nio.ByteBuffer;
+import java.util.*;
 
 
 //XXXX if we do replication, fix the consistency levels

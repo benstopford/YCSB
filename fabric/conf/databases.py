@@ -75,10 +75,10 @@ sleep 3; \
 
     'cassandra' : {
         'name': 'cassandra',
-        'home': '/home/ec2-user/ycsb',
+        'home': '/home/%s'% hosts.env.user, #logs go here
         'command': 'cassandra-cql',
         'properties': {
-            'hosts': '172.31.35.31,172.31.35.30,172.31.35.32',
+            'hosts': ','.join(hosts.env.roledefs['server']),
             'cassandra.readconsistencylevel': 'ONE',
             'cassandra.writeconsistencylevel': 'ONE', #ALL-sync/ONE-async
         },

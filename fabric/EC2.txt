@@ -1,0 +1,24 @@
+This file describes how to use this altered version of YCSB to run on Amazon EC2
+
+Setup
+* Create an amazon AWS Account. Create this and create yourself a .pem file which will provide your private key
+* Place the .pem file in the YCSB root directory
+* Edit fabric/conf/hosts.py to include the path to your .pem file
+* Follow the instructions in FABRIC.txt to install fabric
+
+Execution
+---------------
+in the YCSB root dir run
+
+fab -f fabric/fabfile ec2_up                                        #brings up all the instances you need, a ycsb cluster and the relevant DB
+
+fab -f fabric/fabfile ec2_down                                      #terminates all instances permanently
+
+fab -f fabric/fabfile ycsb_deploy                                   #deploys YCSB to the cluster
+
+fab -f fabric/fabfile ycsb_load:db=cassandra                        #loads data into casssandra
+
+fab -f fabric/fabfile ycsb_run:db=cassandra,workload=B              #run the ycsb benchmark
+
+
+

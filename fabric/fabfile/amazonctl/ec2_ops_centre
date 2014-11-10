@@ -1,0 +1,4 @@
+url=`aws ec2 describe-instances --filters "Name=tag-value,Values=DSC" "Name=launch-index,Values=0" | grep ASSOC | awk {'print "http://" $3 ":8888"'} | uniq`
+echo "Opening $url"
+/usr/bin/open -a "/Applications/Google Chrome.app" $url
+

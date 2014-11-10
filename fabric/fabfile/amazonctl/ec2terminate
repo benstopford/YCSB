@@ -1,0 +1,12 @@
+#!/bin/sh
+
+
+IDS=`aws ec2 describe-instances | grep INSTANCE | awk {'print $8'} | sort | uniq`
+aws ec2 terminate-instances --instance-ids $IDS
+
+
+
+
+
+
+

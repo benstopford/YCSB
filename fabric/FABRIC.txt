@@ -12,6 +12,8 @@ on multiple clients.
 Requirements: Python 2.7.3 or later, Fabric 1.3.2 or later, 
 pytz python package (python-tz ubuntu package)
 
+(set the fabfile location in your path "fabfile = fabric/fabfile" >> ~/.fabricrc)
+
 Run fab -l to see the list of all commands.
 
 

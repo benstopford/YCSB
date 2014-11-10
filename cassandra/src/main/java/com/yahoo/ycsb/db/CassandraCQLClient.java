@@ -18,46 +18,43 @@
 package com.yahoo.ycsb.db;
 
 import com.datastax.driver.core.*;
+import com.datastax.driver.core.exceptions.AlreadyExistsException;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
-import com.yahoo.ycsb.*;
+import com.yahoo.ycsb.ByteArrayByteIterator;
+import com.yahoo.ycsb.ByteIterator;
+import com.yahoo.ycsb.DB;
+import com.yahoo.ycsb.DBException;
 import com.yahoo.ycsb.workloads.CoreWorkload;
 
 import java.nio.ByteBuffer;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 
 /**
  * Tested with Cassandra 2.0, CQL client for YCSB framework
- *
+ * <p/>
  * In CQLSH, create keyspace and table.  Something like:
- *
+ * <p/>
  * create keyspace ycsb WITH REPLICATION = {'class' : 'SimpleStrategy', 'replication_factor': 1 };
  * create table ycsb.usertable (
- *     y_id varchar primary key,
- *     field0 blob,
- *     field1 blob,
- *     field2 blob,
- *     field3 blob,
- *     field4 blob,
- *     field5 blob,
- *     field6 blob,
- *     field7 blob,
- *     field8 blob,
- *     field9 blob);
+ * y_id varchar primary key,
+ * field0 blob,
+ * field1 blob,
+ * field2 blob,
+ * field3 blob,
+ * field4 blob,
+ * field5 blob,
+ * field6 blob,
+ * field7 blob,
+ * field8 blob,
+ * field9 blob);
  *
  * @author cmatser
  */
-public class CassandraCQLClient extends DB
-{
+public class CassandraCQLClient extends DB {
     private static Cluster cluster = null;
     private static Session session = null;
 
@@ -98,14 +95,12 @@ public class CassandraCQLClient extends DB
      * one DB instance per client thread.
      */
     @Override
-    public synchronized void init() throws DBException
-    {
+    public synchronized void init() throws DBException {
         //Check if the cluster has already been initialized
         if (cluster != null)
             return;
 
-        try
-        {
+        try {
             _debug = Boolean.parseBoolean(getProperties().getProperty("debug", "false"));
 
             if (getProperties().getProperty("hosts") == null)
@@ -127,10 +122,9 @@ public class CassandraCQLClient extends DB
             readallfields = Boolean.parseBoolean(getProperties().getProperty(CoreWorkload.READ_ALL_FIELDS_PROPERTY, CoreWorkload.READ_ALL_FIELDS_PROPERTY_DEFAULT));
 
             Cluster.Builder builder = Cluster.builder()
-                                             .withPort(Integer.valueOf(port))
-                                             .addContactPoints(hosts);
-            if ((username != null) && !username.isEmpty())
-            {
+                    .withPort(Integer.valueOf(port))
+                    .addContactPoints(hosts);
+            if ((username != null) && !username.isEmpty()) {
                 builder = builder.withCredentials(username, password);
             }
             cluster = builder.build();
@@ -138,26 +132,55 @@ public class CassandraCQLClient extends DB
             Metadata metadata = cluster.getMetadata();
             System.out.printf("Connected to cluster: %s\n", metadata.getClusterName());
 
-            for (Host discoveredHost : metadata.getAllHosts())
-            {
+            for (Host discoveredHost : metadata.getAllHosts()) {
                 System.out.printf("Datacenter: %s; Host: %s; Rack: %s\n",
-                                  discoveredHost.getDatacenter(),
-                                  discoveredHost.getAddress(),
-                                  discoveredHost.getRack());
+                        discoveredHost.getDatacenter(),
+                        discoveredHost.getAddress(),
+                        discoveredHost.getRack());
             }
 
+            session = cluster.connect();
+            createKeyspace(session, keyspace);
+            createTable(session);
             session = cluster.connect(keyspace);
 
+
             buildStatements();
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             throw new DBException(e);
         }
     }
 
-    private void buildStatements()
-    {
+
+    private void createTable(Session session) {
+        String cql = "create table if not exists ycsb.usertable (\n" +
+                "     y_id varchar primary key,\n" +
+                "      field0 blob,\n" +
+                "      field1 blob,\n" +
+                "      field2 blob,\n" +
+                "      field3 blob,\n" +
+                "      field4 blob,\n" +
+                "      field5 blob,\n" +
+                "      field6 blob,\n" +
+                "      field7 blob,\n" +
+                "      field8 blob,\n" +
+                "      field9 blob);";
+        session.execute(cql);
+        System.out.println("Executed " + cql);
+    }
+
+
+    private void createKeyspace(Session session, String keyspace) {
+        try {
+            session.execute("create keyspace if not exists " + keyspace + " WITH REPLICATION = {'class' : 'SimpleStrategy', 'replication_factor': 1 }");
+            System.out.println("created keyspace " + keyspace);
+        } catch (AlreadyExistsException existsException) {
+            System.out.println("create keyspace failed with exception "+existsException);
+        }
+    }
+
+
+    private void buildStatements() {
         Properties p = getProperties();
         int fieldCount = Integer.parseInt(p.getProperty(CoreWorkload.FIELD_COUNT_PROPERTY, CoreWorkload.FIELD_COUNT_PROPERTY_DEFAULT));
         String fieldPrefix = p.getProperty(CoreWorkload.FIELD_NAME_PREFIX, CoreWorkload.FIELD_NAME_PREFIX_DEFAULT);
@@ -172,9 +195,8 @@ public class CassandraCQLClient extends DB
         insertStatement.setConsistencyLevel(writeConsistencyLevel);
 
         // Update statements for updateOne
-        updateStatements = new ConcurrentHashMap<String,PreparedStatement>(fieldCount);
-        for (int i = 0; i < fieldCount; i++)
-        {
+        updateStatements = new ConcurrentHashMap<String, PreparedStatement>(fieldCount);
+        for (int i = 0; i < fieldCount; i++) {
             is = QueryBuilder.insertInto(table);
             is.value(YCSB_KEY, QueryBuilder.bindMarker());
             is.value(fieldPrefix + i, QueryBuilder.bindMarker());
@@ -189,8 +211,7 @@ public class CassandraCQLClient extends DB
         deleteStatement = session.prepare(QueryBuilder.delete().from(table).where(QueryBuilder.eq(YCSB_KEY, QueryBuilder.bindMarker())));
         deleteStatement.setConsistencyLevel(writeConsistencyLevel);
 
-        if (readallfields)
-        {
+        if (readallfields) {
             // Select statement
             String ss = QueryBuilder.select().all().from(table).where(QueryBuilder.eq(YCSB_KEY, QueryBuilder.bindMarker())).getQueryString();
             selectStatement = session.prepare(ss);
@@ -198,16 +219,13 @@ public class CassandraCQLClient extends DB
 
             // Scan statement
             String initialStmt = QueryBuilder.select().all().from(table).toString();
-            String scanStmt = getScanQueryString().replaceFirst("_", initialStmt.substring(0, initialStmt.length()-1));
+            String scanStmt = getScanQueryString().replaceFirst("_", initialStmt.substring(0, initialStmt.length() - 1));
             scanStatement = session.prepare(scanStmt);
             scanStatement.setConsistencyLevel(readConsistencyLevel);
-        }
-        else
-        {
+        } else {
             // Select statements
-            selectStatements = new ConcurrentHashMap<String,PreparedStatement>(fieldCount);
-            for (int i = 0; i < fieldCount; i++)
-            {
+            selectStatements = new ConcurrentHashMap<String, PreparedStatement>(fieldCount);
+            for (int i = 0; i < fieldCount; i++) {
                 Select ss = QueryBuilder.select(fieldPrefix + i).from(table).where(QueryBuilder.eq(YCSB_KEY, QueryBuilder.bindMarker())).limit(1);
                 PreparedStatement ps = session.prepare(ss);
                 ps.setConsistencyLevel(readConsistencyLevel);
@@ -215,11 +233,10 @@ public class CassandraCQLClient extends DB
             }
 
             // Scan statements
-            scanStatements = new ConcurrentHashMap<String,PreparedStatement>(fieldCount);
-            for (int i = 0; i < fieldCount; i++)
-            {
+            scanStatements = new ConcurrentHashMap<String, PreparedStatement>(fieldCount);
+            for (int i = 0; i < fieldCount; i++) {
                 String initialStmt = QueryBuilder.select(fieldPrefix + i).from(table).toString();
-                String scanStmt = getScanQueryString().replaceFirst("_", initialStmt.substring(0, initialStmt.length()-1));
+                String scanStmt = getScanQueryString().replaceFirst("_", initialStmt.substring(0, initialStmt.length() - 1));
                 PreparedStatement ps = session.prepare(scanStmt);
                 ps.setConsistencyLevel(readConsistencyLevel);
                 scanStatements.put(fieldPrefix + i, ps);
@@ -227,8 +244,7 @@ public class CassandraCQLClient extends DB
         }
     }
 
-    private String getScanQueryString()
-    {
+    private String getScanQueryString() {
         return String.format("_ WHERE %s >= token(%s) LIMIT %s", QueryBuilder.token(YCSB_KEY), QueryBuilder.bindMarker(), QueryBuilder.bindMarker());
     }
 
@@ -237,7 +253,8 @@ public class CassandraCQLClient extends DB
      * DB instance per client thread.
      */
     @Override
-    public void cleanup() throws DBException {}
+    public void cleanup() throws DBException {
+    }
 
     /**
      * Read a record from the database. Each field/value pair from the result will
@@ -249,8 +266,7 @@ public class CassandraCQLClient extends DB
      * @return Zero on success, a non-zero error code on error
      */
     @Override
-    public int readAll(String table, String key, Map<String, ByteIterator> result)
-    {
+    public int readAll(String table, String key, Map<String, ByteIterator> result) {
         BoundStatement bs = selectStatement.bind(key);
         return read(key, result, bs);
     }
@@ -258,40 +274,35 @@ public class CassandraCQLClient extends DB
     /**
      * Read a record from the database. Each field/value pair from the result will be stored in a Map.
      *
-     *
-     * @param table The name of the table
-     * @param key The record key of the record to read.
-     * @param field The field to read
+     * @param table  The name of the table
+     * @param key    The record key of the record to read.
+     * @param field  The field to read
      * @param result A Map of field/value pairs for the result
      * @return Zero on success, a non-zero error code on error
      */
     @Override
-    public int readOne(String table, String key, String field, Map<String, ByteIterator> result)
-    {
+    public int readOne(String table, String key, String field, Map<String, ByteIterator> result) {
         BoundStatement bs = selectStatements.get(field).bind(key);
         return read(key, result, bs);
     }
 
-    public int read(String key, Map<String, ByteIterator> result, BoundStatement bs)
-    {
-        try
-        {
+    public int read(String key, Map<String, ByteIterator> result, BoundStatement bs) {
+        try {
             if (_debug)
                 System.out.println(bs.preparedStatement().getQueryString());
 
             ResultSet rs = session.execute(bs);
             Row row = rs.one();
+//            System.out.printf("Key:%s -> val:%s\n", key, row);
+
             assert row != null : "Key " + key + " was not found; did you run a load job with the correct parameters?";
-            for (ColumnDefinitions.Definition def : row.getColumnDefinitions())
-            {
+            for (ColumnDefinitions.Definition def : row.getColumnDefinitions()) {
                 ByteBuffer val = row.getBytesUnsafe(def.getName());
                 result.put(def.getName(), val == null ? null : new ByteArrayByteIterator(val.array()));
             }
 
             return OK;
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
             System.out.println("Error reading key: " + key);
             return ERR;
@@ -301,22 +312,20 @@ public class CassandraCQLClient extends DB
     /**
      * Perform a range scan for a set of records in the database. Each
      * field/value pair from the result will be stored in a Map.
-     *
+     * <p/>
      * Cassandra CQL uses "token" method for range scan which doesn't always
      * yield intuitive results.
      *
-     *
-     * @param table The name of the table
-     * @param startkey The record key of the first record to read.
+     * @param table       The name of the table
+     * @param startkey    The record key of the first record to read.
      * @param recordcount The number of records to read
-     * @param field The field to read
-     * @param result A List of Maps, where each Map is a set
-     * field/value pairs for one record
+     * @param field       The field to read
+     * @param result      A List of Maps, where each Map is a set
+     *                    field/value pairs for one record
      * @return Zero on success, a non-zero error code on error
      */
     @Override
-    public int scanOne(String table, String startkey, int recordcount, String field, List<Map<String, ByteIterator>> result)
-    {
+    public int scanOne(String table, String startkey, int recordcount, String field, List<Map<String, ByteIterator>> result) {
         BoundStatement bs = scanStatements.get(field).bind(startkey, recordcount);
         return scan(startkey, result, bs);
     }
@@ -324,41 +333,36 @@ public class CassandraCQLClient extends DB
     /**
      * Perform a range scan for a set of records in the database. Each
      * field/value pair from the result will be stored in a Map.
-     *
+     * <p/>
      * Cassandra CQL uses "token" method for range scan which doesn't always
      * yield intuitive results.
      *
-     * @param table The name of the table
-     * @param startkey The record key of the first record to read.
+     * @param table       The name of the table
+     * @param startkey    The record key of the first record to read.
      * @param recordcount The number of records to read
-     * @param result A List of Maps, where each Map is a set
-     * field/value pairs for one record
+     * @param result      A List of Maps, where each Map is a set
+     *                    field/value pairs for one record
      * @return Zero on success, a non-zero error code on error
      */
     @Override
-    public int scanAll(String table, String startkey, int recordcount, List<Map<String, ByteIterator>> result)
-    {
+    public int scanAll(String table, String startkey, int recordcount, List<Map<String, ByteIterator>> result) {
         BoundStatement bs = scanStatement.bind(startkey, recordcount);
         return scan(startkey, result, bs);
     }
 
-    public int scan(String startkey, List<Map<String, ByteIterator>> result, BoundStatement bs)
-    {
-        try
-        {
+    public int scan(String startkey, List<Map<String, ByteIterator>> result, BoundStatement bs) {
+        try {
             if (_debug)
                 System.out.println(bs.preparedStatement().getQueryString());
 
             ResultSet rs = session.execute(bs);
 
             Iterator<Row> iter = rs.iterator();
-            while (iter.hasNext())
-            {
+            while (iter.hasNext()) {
                 Row row = iter.next();
 
                 HashMap<String, ByteIterator> tuple = new HashMap<String, ByteIterator>();
-                for (ColumnDefinitions.Definition def : row.getColumnDefinitions())
-                {
+                for (ColumnDefinitions.Definition def : row.getColumnDefinitions()) {
                     ByteBuffer val = row.getBytesUnsafe(def.getName());
                     tuple.put(def.getName(), val == null ? null : new ByteArrayByteIterator(val.array()));
                 }
@@ -367,9 +371,7 @@ public class CassandraCQLClient extends DB
             }
 
             return OK;
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
             System.out.println("Error scanning with startkey: " + startkey);
             return ERR;
@@ -381,14 +383,13 @@ public class CassandraCQLClient extends DB
      * record key, overwriting any existing values with the same field name.
      *
      * @param table The name of the table
-     * @param key The record key of the record to write.
+     * @param key   The record key of the record to write.
      * @param field The field to update
      * @param value The value to update in the key record
      * @return Zero on success, a non-zero error code on error.
      */
     @Override
-    public int updateOne(String table, String key, String field, ByteIterator value)
-    {
+    public int updateOne(String table, String key, String field, ByteIterator value) {
         HashMap<String, ByteIterator> values = new HashMap<String, ByteIterator>();
         values.put(field, value);
         return insert(table, key, values);
@@ -398,15 +399,13 @@ public class CassandraCQLClient extends DB
      * Update a record in the database. Any field/value pairs in the specified values Map will be written into the record with the specified
      * record key, overwriting any existing values with the same field name.
      *
-     *
-     * @param table The name of the table
-     * @param key The record key of the record to write.
+     * @param table  The name of the table
+     * @param key    The record key of the record to write.
      * @param values A Map of field/value pairs to update in the record
      * @return Zero on success, a non-zero error code on error.
      */
     @Override
-    public int updateAll(String table, String key, Map<String,ByteIterator> values)
-    {
+    public int updateAll(String table, String key, Map<String, ByteIterator> values) {
         return insert(table, key, values);
     }
 
@@ -415,22 +414,18 @@ public class CassandraCQLClient extends DB
      * values Map will be written into the record with the specified record
      * key.
      *
-     *
-     * @param table The name of the table
-     * @param key The record key of the record to insert.
+     * @param table  The name of the table
+     * @param key    The record key of the record to insert.
      * @param values A Map of field/value pairs to insert in the record
      * @return Zero on success, a non-zero error code on error
      */
     @Override
-    public int insert(String table, String key, Map<String, ByteIterator> values)
-    {
-        try
-        {
+    public int insert(String table, String key, Map<String, ByteIterator> values) {
+        try {
             Object[] vals = new Object[values.size() + 1];
             vals[0] = key;
             int i = 1;
-            for (Map.Entry<String, ByteIterator> entry : values.entrySet())
-            {
+            for (Map.Entry<String, ByteIterator> entry : values.entrySet()) {
                 vals[i++] = ByteBuffer.wrap(entry.getValue().toArray());
             }
 
@@ -442,9 +437,7 @@ public class CassandraCQLClient extends DB
             session.execute(bs);
 
             return OK;
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -455,23 +448,19 @@ public class CassandraCQLClient extends DB
      * Delete a record from the database.
      *
      * @param table The name of the table
-     * @param key The record key of the record to delete.
+     * @param key   The record key of the record to delete.
      * @return Zero on success, a non-zero error code on error
      */
     @Override
-    public int delete(String table, String key)
-    {
-        try
-        {
+    public int delete(String table, String key) {
+        try {
             if (_debug)
                 System.out.println(deleteStatement.getQueryString());
 
             session.execute(deleteStatement.bind(key));
 
             return OK;
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             e.printStackTrace();
             System.out.println("Error deleting key: " + key);
         }

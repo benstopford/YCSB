@@ -493,4 +493,9 @@ public class JdbcDBClient extends DB implements JdbcDBClientConstants {
       return -1;
     }
 	}
+
+    @Override
+    public int initCluster() throws DBException {
+        return 0;
+    }
 }

@@ -12,15 +12,20 @@ Execution
 ---------------
 in the YCSB root dir run
 
-fab -f fabric/fabfile ec2_up                                        #brings up all the instances you need, a ycsb cluster and the relevant DB
+fab ec2_up                                        #brings up all the instances you need, a ycsb cluster and the relevant DB
 
-fab -f fabric/fabfile ec2_down                                      #terminates all instances permanently
+fab ec2_down                                      #terminates all instances permanently
 
-fab -f fabric/fabfile ycsb_deploy                                   #deploys YCSB to the cluster
+fab ycsb_deploy                                   #deploys YCSB to the cluster
 
-fab -f fabric/fabfile ycsb_load:db=cassandra                        #loads data into casssandra
+fab ycsb_initdb                                   #initialises the database for the first time
 
-fab -f fabric/fabfile ycsb_run:db=cassandra,workload=B              #run the ycsb benchmark
+fab ycsb_load:db=cassandra                        #loads data into casssandra
 
+fab ycsb_run:db=cassandra,workload=B              #run the ycsb benchmark
+
+fab ycsb_status:db=cassandra                      #quick look at what's going on
+
+fab ycsb_get:db=casssandra,do=True                #download logs (take the do=True to peak at the filenames)
 
 

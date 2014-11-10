@@ -178,6 +178,11 @@ public class CouchbaseClient2_0 extends MemcachedCompatibleClient {
     }
 
     @Override
+    public int initCluster() throws DBException {
+        return 0;
+    }
+
+    @Override
     public int query(String table, String key, int limit) {
         int rnd_ddoc = generator.nextInt(ddoc_names.length);
         int rnd_view = generator.nextInt(view_names.length);

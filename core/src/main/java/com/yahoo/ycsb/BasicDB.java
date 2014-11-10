@@ -298,7 +298,12 @@ public class BasicDB extends DB
 		return 0;
 	}
 
-	/**
+    @Override
+    public int initCluster() throws DBException {
+        return 0;
+    }
+
+    /**
 	 * Short test of BasicDB
 	 */
 	/*

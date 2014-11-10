@@ -1,5 +1,6 @@
 package com.yahoo.ycsb.memcached;
 
+import com.yahoo.ycsb.DBException;
 import net.spy.memcached.ConnectionFactoryBuilder;
 import net.spy.memcached.FailureMode;
 
@@ -43,5 +44,10 @@ public class MemcachedClient extends MemcachedCompatibleClient {
             addresses.add(new InetSocketAddress(host, port));
         }
         return new net.spy.memcached.MemcachedClient(connectionFactoryBuilder.build(), addresses);
+    }
+
+    @Override
+    public int initCluster() throws DBException {
+        return 0;
     }
 }

@@ -27,6 +27,15 @@ def _ycsbloadcmd(database, clientno, timestamp, target=None):
     cmd += ' 2> %s/%s' % (database['home'], errfile)
     return cmd
 
+def _ycsbdbinitcommand(database):
+    cmd = 'bin/ycsb init %s -s' % database['command']
+    cmd += ' -p hosts=%s' % env.roledefs['server'][0]
+    # outfile = get_outfilename(database['name'], 'load', 'out', timestamp)
+    # errfile = get_outfilename(database['name'], 'load', 'err', timestamp)
+    # cmd += ' > %s/%s' % (database['home'], outfile)
+    # cmd += ' 2> %s/%s' % (database['home'], errfile)
+    return cmd
+
 def _ycsbruncmd(database, workload, timestamp, target=None):
     totalclients = len(env.roledefs['client'])
     cmd = workloads.root + '/bin/ycsb'
@@ -53,6 +62,11 @@ def _client_no():
 
 def _totalclients():
     return len(env.roledefs['client'])
+
+@runs_once
+def intialise_database(db):
+    database = get_db(db)
+    local(_ycsbdbinitcommand(database))
 
 @roles('client')
 def load(db, target=None):

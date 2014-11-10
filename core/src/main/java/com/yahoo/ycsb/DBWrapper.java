@@ -17,11 +17,11 @@
 
 package com.yahoo.ycsb;
 
+import com.yahoo.ycsb.measurements.Measurements;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-
-import com.yahoo.ycsb.measurements.Measurements;
 
 /**
  * Wrapper around a "real" DB that measures latencies and counts return codes.
@@ -318,5 +318,10 @@ public class DBWrapper extends DB {
         _measurements.measure("DELETE", (int) ((en - st) / 1000));
         _measurements.reportReturnCode("DELETE", res);
         return res;
+    }
+
+    @Override
+    public int initCluster() throws DBException {
+        return _db.initCluster();
     }
 }

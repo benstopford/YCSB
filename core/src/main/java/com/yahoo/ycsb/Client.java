@@ -462,6 +462,7 @@ public class Client {
         System.out.println("  -target n: attempt to do n operations per second (default: unlimited) - can also\n" +
                 "             be specified as the \"target\" property using -p");
         System.out.println("  -load:  run the loading phase of the workload");
+        System.out.println("  -init:  initialise a database for the first time (when running multiple clients)");
         System.out.println("  -t:  run the transactions phase of the workload (default)");
         System.out.println("  -db dbname: specify the name of the DB to use (default: com.yahoo.ycsb.BasicDB) - \n" +
                 "              can also be specified as the \"db\" property using -p");
@@ -479,6 +480,7 @@ public class Client {
         System.out.println("To run the transaction phase from multiple servers, start a separate client on each.");
         System.out.println("To run the load phase from multiple servers, start a separate client on each; additionally,");
         System.out.println("use the \"insertcount\" and \"insertstart\" properties to divide up the records to be inserted");
+        new RuntimeException().printStackTrace();
     }
 
     public static boolean checkRequiredProperties(Properties props) {
@@ -541,6 +543,7 @@ public class Client {
         Properties props = new Properties();
         Properties fileprops = new Properties();
         boolean dotransactions = true;
+        boolean init = false;
         int threadcount = 1;
         int target = 0;
         boolean status = false;
@@ -575,6 +578,9 @@ public class Client {
                 argindex++;
             } else if (args[argindex].compareTo("-load") == 0) {
                 dotransactions = false;
+                argindex++;
+            } else if (args[argindex].compareTo("-init") == 0) {
+                init = true;
                 argindex++;
             } else if (args[argindex].compareTo("-t") == 0) {
                 dotransactions = true;
@@ -668,16 +674,33 @@ public class Client {
 
         props = fileprops;
 
-        if (!checkRequiredProperties(props)) {
-            System.exit(0);
-        }
-
         long maxExecutionTime = Integer.parseInt(props.getProperty(MAX_EXECUTION_TIME, "0"));
 
         //get number of threads, target and db
         threadcount = Integer.parseInt(props.getProperty("threadcount", "1"));
         dbname = props.getProperty("db", "com.yahoo.ycsb.BasicDB");
         target = Integer.parseInt(props.getProperty("target", "0"));
+
+
+        if (init) {
+            DB db = null;
+            try {
+                db = DBFactory.rawDB(dbname, props);
+                db.initCluster();
+            } catch (UnknownDBException e) {
+                System.out.println("Unknown DB " + dbname);
+            } catch (DBException e) {
+                e.printStackTrace();
+            }
+            System.out.println("Cluster initialised: exiting");
+            System.exit(0);
+        }
+
+        if (!checkRequiredProperties(props)) {
+            System.exit(0);
+        }
+
+
 
         //compute the target throughput
         double targetperthreadperms = -1;

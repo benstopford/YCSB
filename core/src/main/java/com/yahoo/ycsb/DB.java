@@ -17,10 +17,9 @@
 
 package com.yahoo.ycsb;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
-import java.util.List;
 
 /**
  * A layer for accessing a database to be benchmarked. Each thread in the client
@@ -172,4 +171,11 @@ public abstract class DB
 	 * @return Zero on success, a non-zero error code on error.  See this class's description for a discussion of error codes.
 	 */
 	public abstract int delete(String table, String key);
+
+    /**
+     * Used in distributed instances of YCSB to initialise the cluster. This call should only be made once cluster-wide
+     * @return
+     */
+    public abstract int initCluster() throws DBException;
+
 }

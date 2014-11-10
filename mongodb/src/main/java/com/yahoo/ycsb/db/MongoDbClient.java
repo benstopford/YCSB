@@ -9,30 +9,14 @@
 
 package com.yahoo.ycsb.db;
 
-import java.io.UnsupportedEncodingException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-import java.util.Map;
-
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBAddress;
-import com.mongodb.DBCollection;
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
-import com.mongodb.Mongo;
-import com.mongodb.WriteConcern;
-import com.mongodb.WriteResult;
-
+import com.mongodb.*;
 import com.yahoo.ycsb.ByteArrayByteIterator;
 import com.yahoo.ycsb.ByteIterator;
-
-import com.mongodb.*;
-
 import com.yahoo.ycsb.DB;
 import com.yahoo.ycsb.DBException;
+
+import java.io.UnsupportedEncodingException;
+import java.util.*;
 
 /**
  * MongoDB client for YCSB framework.
@@ -213,6 +197,11 @@ public class MongoDbClient extends DB {
                 db.requestDone();
             }
         }
+    }
+
+    @Override
+    public int initCluster() throws DBException {
+        return 0;
     }
 
     @Override

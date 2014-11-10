@@ -21,6 +21,12 @@ COMMANDS = {
         "description" : "Execute the transaction phase",
         "main"        : "com.yahoo.ycsb.Client",
     },
+    "init" : {
+        "command"     : "-init",
+        "description" : "Initialise a fresh database ready for YCSB",
+        "main"        : "com.yahoo.ycsb.Client",
+    },
+
 }
 
 DATABASES = {

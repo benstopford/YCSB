@@ -1,13 +1,5 @@
 package com.yahoo.ycsb.db;
 
-import java.util.*;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.Vector;
-
 import com.aerospike.client.AerospikeException;
 import com.aerospike.client.Bin;
 import com.aerospike.client.Key;
@@ -16,6 +8,8 @@ import com.aerospike.client.policy.Policy;
 import com.aerospike.client.policy.WritePolicy;
 import com.yahoo.ycsb.ByteIterator;
 import com.yahoo.ycsb.DBException;
+
+import java.util.*;
 
 public class AerospikeClient extends com.yahoo.ycsb.DB{
 
@@ -168,6 +162,11 @@ public class AerospikeClient extends com.yahoo.ycsb.DB{
 			return RESULT_CODE_MAPPER.get(e.getResultCode());
 		}
 	}
+
+    @Override
+    public int initCluster() throws DBException {
+        return 0;
+    }
 }
 
 

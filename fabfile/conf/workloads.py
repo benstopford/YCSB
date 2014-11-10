@@ -5,11 +5,11 @@ TIME_DURATION = 60*40 #40 Minutes
 data = {    #global YSCB properties
     #'recordcount': 200000000,  #SSD
     #'recordcount': 500000000,  #SSD
-    'recordcount':  10000,    #RAM
+    'recordcount':  10000000,    #RAM
     'fieldcount': 10,
     'fieldlength': 10,
     #'fieldnameprefix': 'f',
-    'operationcount': 10000,
+    'operationcount': 10000000,
 
     # 'operationcount': 100000*TIME_DURATION, # 40min at 1000k
     'maxexecutiontime': TIME_DURATION,      # 40min

@@ -90,6 +90,16 @@ public class CassandraCQLClient extends DB {
     private static PreparedStatement insertStatement = null;
     private static Map<String, PreparedStatement> updateStatements = null;
 
+
+    @Override
+    public int initCluster() throws DBException {
+        String keyspace = initialiseCluster();
+        session = cluster.connect();
+        createKeyspace(session, keyspace);
+        createTable(session);
+        return 0;
+    }
+
     /**
      * Initialize any state for this DB. Called once per DB instance; there is
      * one DB instance per client thread.
@@ -101,54 +111,54 @@ public class CassandraCQLClient extends DB {
             return;
 
         try {
-            _debug = Boolean.parseBoolean(getProperties().getProperty("debug", "false"));
-
-            if (getProperties().getProperty("hosts") == null)
-                throw new DBException("Required property \"hosts\" missing for CassandraClient");
-
-            String hosts[] = getProperties().getProperty("hosts").split(",");
-            String port = getProperties().getProperty("port", "9042");
-            if (port == null)
-                throw new DBException("Required property \"port\" missing for CassandraClient");
-
-
-            String username = getProperties().getProperty(USERNAME_PROPERTY);
-            String password = getProperties().getProperty(PASSWORD_PROPERTY);
-
-            String keyspace = getProperties().getProperty(KEYSPACE_PROPERTY, KEYSPACE_PROPERTY_DEFAULT);
-
-            readConsistencyLevel = ConsistencyLevel.valueOf(getProperties().getProperty(READ_CONSISTENCY_LEVEL_PROPERTY, READ_CONSISTENCY_LEVEL_PROPERTY_DEFAULT));
-            writeConsistencyLevel = ConsistencyLevel.valueOf(getProperties().getProperty(WRITE_CONSISTENCY_LEVEL_PROPERTY, WRITE_CONSISTENCY_LEVEL_PROPERTY_DEFAULT));
-            readallfields = Boolean.parseBoolean(getProperties().getProperty(CoreWorkload.READ_ALL_FIELDS_PROPERTY, CoreWorkload.READ_ALL_FIELDS_PROPERTY_DEFAULT));
-
-            Cluster.Builder builder = Cluster.builder()
-                    .withPort(Integer.valueOf(port))
-                    .addContactPoints(hosts);
-            if ((username != null) && !username.isEmpty()) {
-                builder = builder.withCredentials(username, password);
-            }
-            cluster = builder.build();
-
-            Metadata metadata = cluster.getMetadata();
-            System.out.printf("Connected to cluster: %s\n", metadata.getClusterName());
-
-            for (Host discoveredHost : metadata.getAllHosts()) {
-                System.out.printf("Datacenter: %s; Host: %s; Rack: %s\n",
-                        discoveredHost.getDatacenter(),
-                        discoveredHost.getAddress(),
-                        discoveredHost.getRack());
-            }
-
-            session = cluster.connect();
-            createKeyspace(session, keyspace);
-            createTable(session);
+            String keyspace = initialiseCluster();
             session = cluster.connect(keyspace);
-
 
             buildStatements();
         } catch (Exception e) {
             throw new DBException(e);
         }
+    }
+
+    private String initialiseCluster() throws DBException {
+        _debug = Boolean.parseBoolean(getProperties().getProperty("debug", "false"));
+
+        if (getProperties().getProperty("hosts") == null)
+            throw new DBException("Required property \"hosts\" missing for CassandraClient");
+
+        String hosts[] = getProperties().getProperty("hosts").split(",");
+        String port = getProperties().getProperty("port", "9042");
+        if (port == null)
+            throw new DBException("Required property \"port\" missing for CassandraClient");
+
+
+        String username = getProperties().getProperty(USERNAME_PROPERTY);
+        String password = getProperties().getProperty(PASSWORD_PROPERTY);
+
+        String keyspace = getProperties().getProperty(KEYSPACE_PROPERTY, KEYSPACE_PROPERTY_DEFAULT);
+
+        readConsistencyLevel = ConsistencyLevel.valueOf(getProperties().getProperty(READ_CONSISTENCY_LEVEL_PROPERTY, READ_CONSISTENCY_LEVEL_PROPERTY_DEFAULT));
+        writeConsistencyLevel = ConsistencyLevel.valueOf(getProperties().getProperty(WRITE_CONSISTENCY_LEVEL_PROPERTY, WRITE_CONSISTENCY_LEVEL_PROPERTY_DEFAULT));
+        readallfields = Boolean.parseBoolean(getProperties().getProperty(CoreWorkload.READ_ALL_FIELDS_PROPERTY, CoreWorkload.READ_ALL_FIELDS_PROPERTY_DEFAULT));
+
+        Cluster.Builder builder = Cluster.builder()
+                .withPort(Integer.valueOf(port))
+                .addContactPoints(hosts);
+        if ((username != null) && !username.isEmpty()) {
+            builder = builder.withCredentials(username, password);
+        }
+        cluster = builder.build();
+
+        Metadata metadata = cluster.getMetadata();
+        System.out.printf("Connected to cluster: %s\n", metadata.getClusterName());
+
+        for (Host discoveredHost : metadata.getAllHosts()) {
+            System.out.printf("Datacenter: %s; Host: %s; Rack: %s\n",
+                    discoveredHost.getDatacenter(),
+                    discoveredHost.getAddress(),
+                    discoveredHost.getRack());
+        }
+        return keyspace;
     }
 
 
@@ -467,4 +477,5 @@ public class CassandraCQLClient extends DB {
 
         return ERR;
     }
+
 }

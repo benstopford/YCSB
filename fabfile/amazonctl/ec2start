@@ -2,12 +2,13 @@
 
 # Script used to create a cassandra cluster with a number of YCSB nodes
 
-CASSANDRA_NODE_COUNT=3
-YCSB_NODE_COUNT=6
+CASSANDRA_NODE_COUNT=$1
+YCSB_NODE_COUNT=$2
 
-YCSB_AMI="ami-6e7bd919"
-CAS_AMI="ami-7f33cd08"
+YCSB_AMI=$3
+CAS_AMI=$4
 
+echo "Running ec2start with: $1 $2 $3 $4"
 
 tagInsancesForAmi(){
     AMI=$1

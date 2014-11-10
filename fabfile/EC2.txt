@@ -1,7 +1,9 @@
 This file describes how to use this altered version of YCSB to run on Amazon EC2
 
 Setup
+* This install currently only works for bash compatible systems as it uses the EC2 command line api (needs porting to the python one)
 * Create an amazon AWS Account. Create this and create yourself a .pem file which will provide your private key
+* Install the EC2 CLI (note this is the new one) http://docs.aws.amazon.com/cli/latest/userguide/installing.html
 * Place the .pem file in the YCSB root directory
 * Edit fabric/conf/hosts.py to include the path to your .pem file
 * Follow the instructions in FABRIC.txt to install fabric

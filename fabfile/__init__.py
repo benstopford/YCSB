@@ -4,6 +4,7 @@
 
 from amazon import amazon_start      as ec2_up
 from amazon import amazon_terminate  as ec2_down
+from amazon import amazon_status  as ec2_status
 
 from ycsb import load         as ycsb_load
 from ycsb import run_workload as ycsb_run

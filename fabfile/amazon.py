@@ -16,7 +16,7 @@ def get_internal_ips(type):
     return out
 
 def amazon_start():
-    out = Popen(["%sec2start" % dir, env.cassandra_node_count, env.ycsb_node_count, env.ycsb_ami, env.casssandra_ami], stdout=PIPE).communicate()[0]
+    out = Popen(["%sec2start" % dir, env.db_node_count, env.ycsb_node_count, env.ycsb_ami, env.db_ami], stdout=PIPE).communicate()[0]
     print out
 
 def amazon_terminate():
@@ -26,6 +26,10 @@ def amazon_terminate():
 def amazon_status():
     out = Popen(["%sec2status" % dir], stdout=PIPE).communicate()[0]
     print out
+
+# @roles('server')
+# def amazon_start_db(db):
+#
 
 
 

@@ -94,8 +94,9 @@ sleep 3; \
         'home': '/root/ycsb',        
         #'home': '/run/shm',
         'command': 'mongodb',
+        'init-cmd': 'mongod'
         'properties': {
-            'mongodb.url': 'mongodb://localhost:27018',
+            'mongodb.url': ','.join(hosts.env.roledefs['server']),
             'mongodb.database': 'ycsb',
             'mongodb.writeConcern': 'normal',
             #'mongodb.writeConcern': 'replicas_safe',

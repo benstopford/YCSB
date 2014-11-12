@@ -1,12 +1,12 @@
 #!/bin/sh
 
-# Script used to create a cassandra cluster with a number of YCSB nodes
+# Script used to create a db cluster with a number of YCSB nodes
 
-CASSANDRA_NODE_COUNT=$1
+DB_NODE_COUNT=$1
 YCSB_NODE_COUNT=$2
 
 YCSB_AMI=$3
-CAS_AMI=$4
+DB_AMI=$4
 
 echo "Running ec2start with: $1 $2 $3 $4"
 
@@ -33,33 +33,32 @@ tagInsancesForAmi(){
 }
 
 
-startCassandraNodes(){
-    echo "**STARTING CASSANDRA CLUSTER**"
+startDbNodes(){
+    echo "**STARTING DB CLUSTER**"
 
     # Start instances
 
-    OUT=`aws ec2 run-instances --image-id $CAS_AMI --count $CASSANDRA_NODE_COUNT --instance-type m3.medium --key-name datalabs-dsc1 --security-groups my-eu-sec-group --user-data "--clustername datalabs-cassandra --totalnodes $CASSANDRA_NODE_COUNT --version community"`
+    OUT=`aws ec2 run-instances --image-id $DB_AMI --count $DB_NODE_COUNT --instance-type m1.large --key-name datalabs-dsc1 --security-groups my-eu-sec-group --user-data "--clustername datalabs-cassandra --totalnodes $CASSANDRA_NODE_COUNT --version community"`
 
-    tagInsancesForAmi $CAS_AMI "DSC"
+    #--block-device-mappings "[{\"DeviceName\":\"/dev/sda1\",\"Ebs\":{\"DeleteOnTermination\":true,\"SnapshotId\":\"snap-7ab4379e\",\"VolumeSize\":50,\"VolumeType\":\"gp2\"}}]"
+
+    tagInsancesForAmi $DB_AMI "DB"
 
 
-    OPS=`aws ec2 describe-instances --filters "Name=image-id,Values=$CAS_AMI" "Name=instance-state-name,Values=pending,running" "Name=launch-index,Values=0"| grep ASSOCI | awk {'print $3'} | sort | uniq`
-    echo "OPS centre can be found at http://$OPS:8888"
+    OPS=`aws ec2 describe-instances --filters "Name=image-id,Values=$DB_AMI" "Name=instance-state-name,Values=pending,running" "Name=launch-index,Values=0"| grep ASSOCI | awk {'print $3'} | sort | uniq`
 
-    ECHO "Created cassandra instances"
+    ECHO "Created DB Instances"
 }
 
 startYcsbNodes(){
     echo "**STARTING YCSB INSTANCES**"
-
-
 
     OUT=`aws ec2 run-instances --image-id $YCSB_AMI --count $YCSB_NODE_COUNT --instance-type t2.micro --key-name datalabs-dsc1 --security-groups my-eu-sec-group`
 
     tagInsancesForAmi $YCSB_AMI "YCSB"
 }
 
-startCassandraNodes
+startDbNodes
 startYcsbNodes
 echo "All services have been started."
 

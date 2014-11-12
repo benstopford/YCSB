@@ -29,7 +29,7 @@ def _ycsbloadcmd(database, clientno, timestamp, target=None):
 
 def _ycsbdbinitcommand(database):
     cmd = 'bin/ycsb init %s -s' % database['command']
-    cmd += ' -p hosts=%s' % env.roledefs['server'][0]
+    cmd += ' -p hosts=%s' % env.role_defs['server'][0]
     # outfile = get_outfilename(database['name'], 'load', 'out', timestamp)
     # errfile = get_outfilename(database['name'], 'load', 'err', timestamp)
     # cmd += ' > %s/%s' % (database['home'], outfile)

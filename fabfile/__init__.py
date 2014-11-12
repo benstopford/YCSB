@@ -14,7 +14,8 @@ from ycsb import deploy                 as ycsb_deploy
 from ycsb import kill                   as ycsb_kill
 from ycsb import clean_logs             as ycsb_clean
 from ycsb import test                   as ycsb_test
-from ycsb import intialise_database     as ycsb_initdb
+from ycsb import intialise_tables       as ycsb_inittables
+from ycsb import start_db               as ycsb_startdb
 
 
 from mongodb import mongos_restart

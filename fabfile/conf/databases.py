@@ -94,6 +94,7 @@ sleep 3; \
         'home': '/root/ycsb',        
         #'home': '/run/shm',
         'command': 'mongodb',
+        'start_db_script':'sudo service mongod start',
         'properties': {
             'mongodb.url': ','.join(hosts.env.roledefs['server']),
             'mongodb.database': 'ycsb',

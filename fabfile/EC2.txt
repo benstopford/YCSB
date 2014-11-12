@@ -18,7 +18,10 @@ fab ec2_down                                      #terminates all instances perm
 
 fab ycsb_deploy                                   #deploys YCSB to the cluster
 
-fab ycsb_initdb                                   #initialises the database for the first time
+fab ycsb_inittables                               #initialises the database tables for the first time
+
+fab ycsb_inittables                               #initialises the database tables for the first time
+
 
 fab ycsb_load:db=cassandra                        #loads data into casssandra
 

@@ -64,9 +64,16 @@ def _totalclients():
     return len(env.roledefs['client'])
 
 @runs_once
-def intialise_database(db):
+def intialise_tables(db):
     database = get_db(db)
     local(_ycsbdbinitcommand(database))
+
+@roles('server')
+def start_db(db):
+    database = get_db(db)
+    script = database['start_db_script']
+    print "Running start script for %s: %s" % (database['name'],script)
+    run(script)
 
 @roles('client')
 def load(db, target=None):

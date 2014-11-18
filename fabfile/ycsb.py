@@ -29,7 +29,7 @@ def _ycsbloadcmd(database, clientno, timestamp, target=None):
 
 def _ycsbdbinitcommand(database):
     cmd = 'bin/ycsb init %s -s' % database['command']
-    cmd += ' -p hosts=%s' % env.role_defs['server'][0]
+    cmd += ' -p hosts=%s' % env.roledefs['server'][0]
     # outfile = get_outfilename(database['name'], 'load', 'out', timestamp)
     # errfile = get_outfilename(database['name'], 'load', 'err', timestamp)
     # cmd += ' > %s/%s' % (database['home'], outfile)
@@ -68,12 +68,32 @@ def intialise_tables(db):
     database = get_db(db)
     local(_ycsbdbinitcommand(database))
 
+
+@roles('server_man')
+def start_db_man(db):
+    database = get_db(db)
+    print 'Running initialisation script for database management node'
+    script = database['start_db_man_script']
+    for line in script:
+        run(line)
+
 @roles('server')
 def start_db(db):
     database = get_db(db)
+    print "Running install script for %s" % (database['name'])
+
     script = database['start_db_script']
-    print "Running start script for %s: %s" % (database['name'],script)
-    run(script)
+    for line in script:
+        #Process substitutions
+        if "@MAN" in line:
+            management_node = env.roledefs['server_man'][0] #only support one managment node currently
+            line = line.replace("@MAN", management_node)
+        if line.startswith("#LOOP_DB"):
+            line = line.replace("#LOOP_DB","")
+            for db in env.roledefs['server']:
+                run(line.replace("@DB",db))
+        else:
+            run(line)
 
 @roles('client')
 def load(db, target=None):
@@ -238,6 +258,23 @@ def kill(force=False):
         run('ps -f -C java')
         if force or confirm(red("Do you want to kill Java on the client?")):
             run('sudo killall java')
+
+@roles('server')
+def kill_db(db,force=False):
+    """Kills DB processes"""
+    with settings(warn_only=True):
+        database = get_db(db)
+        for line in database['stop_db_script']:
+            run(line)
+
+@roles('server_man')
+def kill_db_man(db,force=False):
+    """Kills DB processes"""
+    with settings(warn_only=True):
+        database = get_db(db)
+        for line in database['stop_db_man_script']:
+            run(line)
+
 
 @roles('client')
 def clean_logs(force=False, db=None):

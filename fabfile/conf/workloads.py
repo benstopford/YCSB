@@ -5,17 +5,17 @@ TIME_DURATION = 60*40 #40 Minutes
 data = {    #global YSCB properties
     #'recordcount': 200000000,  #SSD
     #'recordcount': 500000000,  #SSD
-    'recordcount':  100000,    #RAM
+    'recordcount':  1000000,    #RAM
     'fieldcount': 10,
     'fieldlength': 10,
     #'fieldnameprefix': 'f',
-    'operationcount': 100000,
+    'operationcount': 1000000,
 
     # 'operationcount': 100000*TIME_DURATION, # 40min at 1000k
     'maxexecutiontime': TIME_DURATION,      # 40min
     #'maxexecutiontime': 600,      # 10min
 
-    'threadcount': 10,
+    'threadcount': 30,
     'workload': 'com.yahoo.ycsb.workloads.CoreWorkload',
     'exportmeasurementsinterval': 30000,
     #'warmupexecutiontime': 60000,
@@ -29,7 +29,7 @@ data = {    #global YSCB properties
     'measurementtype': 'timeseries',
     'timeseries.granularity': 100, # Interval for reporting in ms
     #'reconnectiontime': 5000, # 5 sec limit before reconnection
-    'reconnectionthroughput': 10, #limit for reconnection.
+    #'reconnectionthroughput': 10, #limit for reconnection.
     #'retrydelay': 1,
     #'readallfields': 'false',
     #'writeallfields': 'false',

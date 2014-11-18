@@ -1,0 +1,32 @@
+#!/bin/sh
+AMI=$1
+TAG_NAME=$2
+ONLY_TAG_ONE=${3:-0}
+
+# Get the instance ids of the images we just started
+IDS=""
+while [[ -z "$IDS" ]]
+do
+    IDS=`aws ec2 describe-instances --filters "Name=image-id,Values=$AMI" "Name=instance-state-name,Values=pending,running" | grep INSTANCES | awk {'print $8'}`
+    printf "."
+    sleep 1
+done
+echo "."
+
+# Add tag to each instance so we can identify it
+for ID in $IDS
+do
+    aws ec2 create-tags --resources $ID --tags Key=Name,Value=$TAG_NAME
+    echo "Created $TAG_NAME tag for $ID"
+    if [ $ONLY_TAG_ONE -eq 1 ]
+        then
+        break
+    fi
+done
+
+
+
+
+
+
+

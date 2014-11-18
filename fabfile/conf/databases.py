@@ -1,19 +1,20 @@
 import hosts
 
+
 databases = {
 
-    'aerospike' : {
-        'name': 'aerospike',    #name of the database (used to form the logfile name)
-        'home': '/run/shm',     #database home, to put logs there
-        'command': 'aerospike', #database name to pass to ycsb command
-        'properties': {         #properties to pass to ycsb command as -p name=value
-            'host': 'e1.citrusleaf.local',  #database connection params
-            'port': 3000,
-            'ns': 'test',
-            'set': 'YCSB',
+    'aerospike': {
+        'name': 'aerospike',  # name of the database (used to form the logfile name)
+        'home': '/run/shm',  # database home, to put logs there
+        'command': 'aerospike',  # database name to pass to ycsb command
+        'properties': {  #properties to pass to ycsb command as -p name=value
+                         'host': 'e1.citrusleaf.local',  #database connection params
+                         'port': 3000,
+                         'ns': 'test',
+                         'set': 'YCSB',
         },
         'status': {
-            'hosts': hosts.env.roledefs['server'][0:1],     #hosts on which to run the status command
+            'hosts': hosts.env.roledefs['server'][0:1],  #hosts on which to run the status command
             'command': '/opt/citrusleaf/bin/clmonitor -e info'  #the status command
         },
         'failover': {
@@ -23,7 +24,7 @@ databases = {
         },
     },
 
-    'couchbase' : {
+    'couchbase': {
         'name': 'couchbase',
         'home': '/run/shm',
         'command': 'couchbase',
@@ -33,12 +34,12 @@ databases = {
             'couchbase.user': '',
             'couchbase.password': '',
             'couchbase.opTimeout': 1000,
-            #'couchbase.failureMode': 'Retry',
+            # 'couchbase.failureMode': 'Retry',
             'couchbase.checkOperationStatus': 'true',
         }
     },
 
-    'couchbase2' : {
+    'couchbase2': {
         'name': 'couchbase',
         'home': '/run/shm',
         'command': 'couchbase2',
@@ -50,11 +51,11 @@ databases = {
             'couchbase.user': '',
             'couchbase.password': '',
             'couchbase.opTimeout': 1000,
-            #'couchbase.failureMode': 'Retry',
-            #'couchbase.persistTo': 'ONE',
-            #'couchbase.replicateTo': 'ONE',
+            # 'couchbase.failureMode': 'Retry',
+            # 'couchbase.persistTo': 'ONE',
+            # 'couchbase.replicateTo': 'ONE',
             'couchbase.checkOperationStatus': 'true',
-            },
+        },
         'failover': {
             'files': ['couchbase_kill.sh', 'couchbase_start.sh'],
             'kill_command': '''\
@@ -73,14 +74,19 @@ sleep 3; \
         }
     },
 
-    'cassandra' : {
+    'cassandra': {
         'name': 'cassandra',
-        'home': '/home/%s'% hosts.env.user, #logs go here
+        'ami': 'ami-8932ccfe',
+        'home': '/home/%s' % hosts.env.user,  # logs go here
         'command': 'cassandra-cql',
+        'ec2_config': {
+            '--image-id': 'ami-a42884d3',
+            '--user-data':'"clustername datalabs-cassandra --totalnodes ' + hosts.env.db_node_count + ' --version community"'
+        },
         'properties': {
-            'hosts': ','.join(hosts.env.roledefs['server']),
+            'hosts': ','.join(hosts.env.roledefs['server']),  # this shouldn't be here - it's dynamic not config
             'cassandra.readconsistencylevel': 'ONE',
-            'cassandra.writeconsistencylevel': 'ONE', #ALL-sync/ONE-async
+            'cassandra.writeconsistencylevel': 'ONE',  # ALL-sync/ONE-async
         },
         'failover': {
             'files': [],
@@ -89,17 +95,51 @@ sleep 3; \
         },
     },
 
-    'mongodb' : {
+    'mongodb': {
         'name': 'mongodb',
-        'home': '/root/ycsb',        
-        #'home': '/run/shm',
+        'home': '/home/%s' % hosts.env.user,
         'command': 'mongodb',
-        'start_db_script':'sudo service mongod start',
+        'has_management_node': 'True',
+        'ec2_config': {
+            '--image-id': 'ami-5a61d72d',  #test node 'ami-6e7bd919', official mongo base = ami-a42884d3, my ulimit increase ami-5a61d72d
+        },
+
+        'start_db_man_script': [
+            'sudo mkdir -p /data/configdb',
+            'sudo chmod 777 /data/configdb',
+            # 'sudo chmod 446 /etc/mongod.conf',
+            # 'if ! grep -q "rs1" /etc/mongod.conf; then echo \'replSet = "rs1"\' >> /etc/mongod.conf; fi',
+            ' echo "mongod --configsvr --dbpath /data/configdb --port 27027 >config.txt 2>conferr.txt" | at now', # use 'at now' to get around fabric's inability to deal with nohup
+        ],
+        'start_db_script': [
+            # 'echo "sudo sh -c \'ulimit -n 65535 && exec su $LOGNAME\'" > ul.sh',
+            # 'echo "exit" >>ul.sh',
+            # 'chmod +x ul.sh',
+            # './ul.sh',
+            # 'ulimit -n',
+            'echo "mongos --configdb @MAN:27027 --port 27028 >mongos.txt 2>mongosErr.txt" | at now',
+            'sudo service mongod start',
+            '#LOOP_DB mongo localhost:27028/ycsb --eval "sh.addShard( \'@DB:27017\')"',
+            'mongo localhost:27028/ycsb --eval "sh.enableSharding(\'ycsb\')"',
+            'mongo localhost:27028/ycsb --eval "sh.shardCollection(\'ycsb.usertable\', { \'_id\': \'hashed\' })"',
+            'mongo localhost:27028/ycsb --eval "db.usertable.remove({})"',
+            # 'sudo sh -c "ulimit -n 65535 && exec su $LOGNAME"'
+
+        ],
+        'stop_db_script': [
+            'sudo killall mongos',
+            'sudo killall mongod'
+        ],
+        'stop_db_man_script': [
+            'sudo killall mongod'
+        ],
+
         'properties': {
-            'mongodb.url': ','.join(hosts.env.roledefs['server']),
+            'mongodb.url': (
+            hosts.env.roledefs['server_private_ip'][0] + ":27028" if len(hosts.env.roledefs['server_private_ip']) > 0 else ""),
             'mongodb.database': 'ycsb',
             'mongodb.writeConcern': 'normal',
-            #'mongodb.writeConcern': 'replicas_safe',
+            # 'mongodb.writeConcern': 'replicas_safe',
             'mongodb.readPreference': 'primaryPreferred',
         },
         'configdb': 'r5.citrusleaf.local',
@@ -110,7 +150,7 @@ sleep 3; \
         },
     },
 
-    'hbase' : {
+    'hbase': {
         'name': 'hbase',
         'home': '/run/shm',
         'command': 'hbase',
@@ -120,13 +160,14 @@ sleep 3; \
     },
 
 
-    'basic' : { #fake database
-        'name': 'basic',
-        'home': '/run/shm',
-        'command': 'basic',
-        'properties': {
-            'basicdb.verbose': 'false',
-        }
+    'basic': {  # fake database
+                'name': 'basic',
+                'home': '/run/shm',
+                'command': 'basic',
+                'properties': {
+                    'basicdb.verbose': 'false',
+                }
     },
 
 }
+

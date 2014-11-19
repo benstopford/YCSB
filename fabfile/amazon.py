@@ -16,7 +16,7 @@ def start_db_instances(database):
     """Starts defined database instances if they are not already running"""
 
     node_count = int(env.db_node_count)
-    current = len(get_external_ips('DB').split())
+    current = len(get_external_ips('DB',False).split())
 
     if database['has_management_node'] in 'True':
         node_count += 1
@@ -24,6 +24,10 @@ def start_db_instances(database):
     if current >= node_count:
         print "Not starting new database nodes as there are already %s running." % current
         return
+
+    if node_count > current > 0:
+        node_count = node_count - current
+        print "There are already %s nodes running so we will only start %s additional ones" % (current, node_count)
 
     command = ["aws", "ec2", "run-instances",
                "--count=" + `node_count`,
@@ -68,14 +72,18 @@ def start_db_instances(database):
 
 def start_ycsb_instances():
     node_count = int(env.ycsb_node_count)
-    current = len(get_external_ips('YCSB').split())
+    current = len(get_external_ips('YCSB', False).split())
 
-    if current >= node_count:
+    if node_count <= current:
         print "Not starting new ycsb nodes as there are already %s running." % current
         return
 
+    if 0 < current < node_count:
+        node_count = node_count - current
+        print "There are already %s nodes running so we will only start %s additional ones" % (current, node_count)
+
     command = ["aws", "ec2", "run-instances",
-               "--count=" + env.ycsb_node_count,
+               "--count=" + node_count,
                "--image-id=" + env.ycsb_ami,
                "--instance-type=" + env.ycsb_instance_type,
                "--key-name=datalabs-dsc1",
@@ -102,14 +110,14 @@ def configure_db_instances():
 
 
 def wait_for_tagged_hosts_to_start(tag, count):
-    while len(get_external_ips(tag).split()) < int(count):
-        print "Waiting for %s hosts to start. Currently %s" % (count, len(get_external_ips(tag).split()))
+    while len(get_external_ips(tag, False).split()) < int(count):
+        print "Waiting for %s hosts to start. Currently %s" % (count, len(get_external_ips(tag,False).split()))
         time.sleep(1)
 
     #Test the ssh connection with test connection with retries
     execute(
         test_connection_with_wait,
-        hosts=get_external_ips(tag).split()
+        hosts=get_external_ips(tag,False).split()
     )
 
 def test_connection_with_wait():

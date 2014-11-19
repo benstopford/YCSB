@@ -3,9 +3,10 @@ from subprocess import *
 dir = "fabfile/amazonctl/"
 
 
-def get_external_ips(type):
+def get_external_ips(type, verbose=True):
     out = Popen(["%sec2externalips" % dir, type], stdout=PIPE).communicate()[0]
-    print "%s %s external IPs: %s"  % (out.count('\n'), type ,out.replace("\n",", "))
+    if verbose:
+        print "%s %s external IPs: %s"  % (out.count('\n'), type ,out.replace("\n",", "))
     return out
 
 

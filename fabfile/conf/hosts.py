@@ -11,7 +11,7 @@ env.ycsb_ami="ami-6e7bd919"
 env.user = 'ec2-user'
 env.key_filename = 'datalabs-dsc1.pem'
 
-env.db_instance_type="m1.large"
+env.db_instance_type="t2.micro"#"m1.large"
 env.ycsb_instance_type="t2.micro"
 
 

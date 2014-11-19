@@ -141,9 +141,7 @@ sleep 3; \
         ],
 
         'properties': {
-            'mongodb.url': (
-                hosts.env.roledefs['server_private_ip'][0] + ":27028" if len(
-                    hosts.env.roledefs['server_private_ip']) > 0 else ""),
+            'mongodb.url': ",".join([w + ":27028" for w in hosts.env.roledefs['server_private_ip']]),
             'mongodb.database': 'ycsb',
             'mongodb.writeConcern': 'normal',
             # 'mongodb.writeConcern': 'replicas_safe',

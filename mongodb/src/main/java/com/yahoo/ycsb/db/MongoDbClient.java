@@ -66,6 +66,13 @@ public class MongoDbClient extends DB {
         // initialize MongoDb driver
         Properties props = getProperties();
         String url = props.getProperty("mongodb.url", "mongodb://localhost:27017");
+        if(url.contains(",")){
+            //pick one and random
+            String[] urls = url.split(",");
+            int index = new Random().nextInt(urls.length);
+            url = urls[index];
+            System.out.printf("Using Mongo URL: %s\n", url);
+        }
         database = props.getProperty("mongodb.database", "ycsb");
         String writeConcernValue = props.getProperty("mongodb.writeConcern", "FSYNC_SAFE").toUpperCase();
         String readPreferenceValue = props.getProperty("mongodb.readPreference", "NEAREST").toUpperCase();

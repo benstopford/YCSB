@@ -5,8 +5,6 @@ from fabfile.helpers import get_db
 from amazon_ip import *
 from conf.hosts import ycsb_ec2_user
 
-
-
 dir = "fabfile/amazonctl/"
 fabric_variable_bypass = {}
 
@@ -166,11 +164,8 @@ def amazon_status():
     print out
 
 
-def test(c):
-    global env
-    env.user= 'ubuntu'
-    wait_for_tagged_hosts_to_start('DB', c)
-
+def test():
+    print get_db('mongodb')['properties']['mongodb.url']
 
 
 

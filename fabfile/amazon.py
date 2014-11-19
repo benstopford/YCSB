@@ -69,70 +69,6 @@ def start(database, tag, node_count):
         wait_for_tagged_hosts_to_start(tag, node_count)
 
 
-def start_db_instances_backup(database):
-    """Starts defined database instances if they are not already running"""
-
-    node_count = int(env.db_node_count)
-    current = len(get_external_ips('DB', False).split())
-
-    # refactor this so that we create the db nodes then create the management nodes and tag them seperately.
-
-    if database['has_management_node'] in 'True':
-        node_count += 1
-
-    if current >= node_count:
-        print "Not starting new database nodes as there are already %s running." % current
-        return
-
-    if node_count > current > 0:
-        node_count = node_count - current
-        print "There are already %s nodes running so we will only start %s additional ones" % (current, node_count)
-
-
-    # start db
-    command = ["aws", "ec2", "run-instances",
-               "--count=" + `node_count`,
-               "--instance-type=" + env.db_instance_type,
-               "--key-name="+env.key_name,
-               "--security-groups="+env.security_group
-    ]
-    for key, value in database['ec2_config'].iteritems():
-        command.append(key + "=" + value)
-    print command
-    out = subprocess.check_output(command)
-
-
-    # Tag the instances we created - TODO: replace with regex
-    final = ""
-    lines = out.split("\n")
-    for line in lines:
-        if line.startswith("INSTANCES"):
-            for word in line.split("\t"):
-                if (word.startswith("i-")):
-                    subprocess.call(["%sec2tag2" % dir, word, "DB"])
-                    final = word
-
-    # Tag the final nods as the management node
-    if database['has_management_node'] in 'True':
-        subprocess.call(["%sec2tag2" % dir, final, "DB_MAN"])
-
-    wait_for_tagged_hosts_to_start('DB', int(env.db_node_count))
-
-    if database['has_management_node'] in 'True':
-        wait_for_tagged_hosts_to_start('DB_MAN', 1)
-
-    #Add machine specific config such as ulimits
-    if 'pre-reboot-settings' in database:
-        global fabric_variable_bypass
-        fabric_variable_bypass = database
-        execute(
-            configure_db_instances,
-            hosts=get_external_ips("DB").split()
-        )
-        reboot_instances('DB')
-        wait_for_tagged_hosts_to_start('DB', node_count)
-
-
 def start_ycsb_instances():
     node_count = int(env.ycsb_node_count)
     current = len(get_external_ips('YCSB', False).split())
@@ -164,7 +100,7 @@ def start_ycsb_instances():
                 if (word.startswith("i-")):
                     subprocess.call(["%sec2tag2" % dir, word, "YCSB"])
 
-    def wait_for_tagged_hosts_to_start('YCSB', node_count):
+    wait_for_tagged_hosts_to_start('YCSB', node_count)
 
 
 def configure_db_instances():

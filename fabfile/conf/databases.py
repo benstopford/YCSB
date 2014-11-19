@@ -165,7 +165,7 @@ sleep 3; \
     'basic': {  # fake database
                 'name': 'basic',
                 'home': '/run/shm',
-                'has_management_node': 'False',
+                'has_management_node': 'True',
                 'instance-type':'t2.micro',
                 'ec2_config': {
                     '--image-id': 'ami-6e7bd919',

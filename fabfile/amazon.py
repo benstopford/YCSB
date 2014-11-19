@@ -2,8 +2,9 @@ import subprocess
 import time
 from fabric.api import env, hosts, roles, run, settings, execute, sudo, local
 from fabfile.helpers import get_db
-from conf.hosts import generate_roledefs
 from amazon_ip import *
+from conf.hosts import ycsb_ec2_user
+
 
 
 dir = "fabfile/amazonctl/"
@@ -115,7 +116,7 @@ def wait_for_tagged_hosts_to_start(tag, count):
         print "Waiting for %s hosts to start. Currently %s" % (count, len(get_external_ips(tag, False).split()))
         time.sleep(1)
 
-    print 'All hosts started'
+    print '%s %s hosts started' % (count, tag)
 
     # Test the ssh connection with retries
     execute(
@@ -134,9 +135,24 @@ def reboot_instances(tag):
     local("aws ec2 reboot-instances --instance-ids %s" % " ".join(ids))
 
 
+def set_db_ssh_user(database):
+    # User must be set at database level so override global
+    global env
+    env.user = database['ec2user']
+
+
+def set_ycsb_ssh_user():
+    # set user back to ycsb user
+    env.user = ycsb_ec2_user
+
+
 def amazon_start(db):
     database = get_db(db)
+
+    set_db_ssh_user(database)
     start_db_instances(database)
+
+    set_ycsb_ssh_user()
     start_ycsb_instances()
 
 
@@ -151,6 +167,8 @@ def amazon_status():
 
 
 def test(c):
+    global env
+    env.user= 'ubuntu'
     wait_for_tagged_hosts_to_start('DB', c)
 
 

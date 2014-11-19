@@ -8,7 +8,8 @@ env.ycsb_node_count = "2"
 
 env.ycsb_ami = "ami-6e7bd919"
 
-env.user = 'ec2-user'
+ycsb_ec2_user = 'ec2-user'
+env.user = ycsb_ec2_user
 env.key_name = 'datalabs-dsc1'
 env.key_filename = env.key_name + '.pem'
 env.security_group = 'my-eu-sec-group'

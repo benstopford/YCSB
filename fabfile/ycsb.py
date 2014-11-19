@@ -73,27 +73,34 @@ def intialise_tables(db):
 def start_db_man(db):
     database = get_db(db)
     print 'Running initialisation script for database management node'
-    script = database['start_db_man_script']
-    for line in script:
-        run(line)
+    if 'start_db_man_script' in database.keys():
+        script = database['start_db_man_script']
+        for line in script:
+            run(line)
+    else:
+        print 'no management scripts specified for %s' % db
 
 @roles('server')
 def start_db(db):
     database = get_db(db)
     print "Running install script for %s" % (database['name'])
 
-    script = database['start_db_script']
-    for line in script:
-        #Process substitutions
-        if "@MAN" in line:
-            management_node = env.roledefs['server_man'][0] #only support one managment node currently
-            line = line.replace("@MAN", management_node)
-        if line.startswith("#LOOP_DB"):
-            line = line.replace("#LOOP_DB","")
-            for db in env.roledefs['server']:
-                run(line.replace("@DB",db))
-        else:
-            run(line)
+    if 'start_db_script' in database.keys():
+        script = database['start_db_script']
+        for line in script:
+            #Process substitutions
+            if "@MAN" in line:
+                management_node = env.roledefs['server_man'][0] #only support one managment node currently
+                line = line.replace("@MAN", management_node)
+            if line.startswith("#LOOP_DB"):
+                line = line.replace("#LOOP_DB","")
+                for db in env.roledefs['server']:
+                    run(line.replace("@DB",db))
+            else:
+                run(line)
+    else:
+        print 'no database start scripts specified for %s' % db
+
 
 @roles('client')
 def load(db, target=None):

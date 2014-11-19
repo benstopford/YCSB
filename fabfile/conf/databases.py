@@ -7,14 +7,14 @@ databases = {
         'name': 'aerospike',  # name of the database (used to form the logfile name)
         'home': '/run/shm',  # database home, to put logs there
         'command': 'aerospike',  # database name to pass to ycsb command
-        'properties': {  #properties to pass to ycsb command as -p name=value
+        'properties': {  # properties to pass to ycsb command as -p name=value
                          'host': 'e1.citrusleaf.local',  #database connection params
                          'port': 3000,
                          'ns': 'test',
                          'set': 'YCSB',
         },
         'status': {
-            'hosts': hosts.env.roledefs['server'][0:1],  #hosts on which to run the status command
+            'hosts': hosts.env.roledefs['server'][0:1],  # hosts on which to run the status command
             'command': '/opt/citrusleaf/bin/clmonitor -e info'  #the status command
         },
         'failover': {
@@ -76,12 +76,13 @@ sleep 3; \
 
     'cassandra': {
         'name': 'cassandra',
-        'ami': 'ami-8932ccfe',
         'home': '/home/%s' % hosts.env.user,  # logs go here
         'command': 'cassandra-cql',
+        'has_management_node': 'False',
         'ec2_config': {
-            '--image-id': 'ami-a42884d3',
-            '--user-data':'"clustername datalabs-cassandra --totalnodes ' + hosts.env.db_node_count + ' --version community"'
+            '--image-id': 'ami-8932ccfe',
+            '--user-data': '"--clustername datalabs-cassandra --totalnodes ' + hosts.env.db_node_count + ' --version community'
+            # need to leave out the closing "
         },
         'properties': {
             'hosts': ','.join(hosts.env.roledefs['server']),  # this shouldn't be here - it's dynamic not config
@@ -101,7 +102,8 @@ sleep 3; \
         'command': 'mongodb',
         'has_management_node': 'True',
         'ec2_config': {
-            '--image-id': 'ami-5a61d72d',  #test node 'ami-6e7bd919', official mongo base = ami-a42884d3, my ulimit increase ami-5a61d72d
+            '--image-id': 'ami-5a61d72d',
+            # test node 'ami-6e7bd919', official mongo base = ami-a42884d3, my ulimit increase ami-5a61d72d
         },
 
         'start_db_man_script': [
@@ -109,14 +111,9 @@ sleep 3; \
             'sudo chmod 777 /data/configdb',
             # 'sudo chmod 446 /etc/mongod.conf',
             # 'if ! grep -q "rs1" /etc/mongod.conf; then echo \'replSet = "rs1"\' >> /etc/mongod.conf; fi',
-            ' echo "mongod --configsvr --dbpath /data/configdb --port 27027 >config.txt 2>conferr.txt" | at now', # use 'at now' to get around fabric's inability to deal with nohup
+            ' echo "mongod --configsvr --dbpath /data/configdb --port 27027 >config.txt 2>conferr.txt" | at now',
         ],
         'start_db_script': [
-            # 'echo "sudo sh -c \'ulimit -n 65535 && exec su $LOGNAME\'" > ul.sh',
-            # 'echo "exit" >>ul.sh',
-            # 'chmod +x ul.sh',
-            # './ul.sh',
-            # 'ulimit -n',
             'echo "mongos --configdb @MAN:27027 --port 27028 >mongos.txt 2>mongosErr.txt" | at now',
             'sudo service mongod start',
             '#LOOP_DB mongo localhost:27028/ycsb --eval "sh.addShard( \'@DB:27017\')"',
@@ -135,8 +132,9 @@ sleep 3; \
         ],
 
         'properties': {
-            'mongodb.url': (
-            hosts.env.roledefs['server_private_ip'][0] + ":27028" if len(hosts.env.roledefs['server_private_ip']) > 0 else ""),
+            'mongodb:url': (
+                hosts.env.roledefs['server_private_ip'][0] + ":27028" if len(
+                    hosts.env.roledefs['server_private_ip']) > 0 else ""),
             'mongodb.database': 'ycsb',
             'mongodb.writeConcern': 'normal',
             # 'mongodb.writeConcern': 'replicas_safe',
@@ -163,9 +161,14 @@ sleep 3; \
     'basic': {  # fake database
                 'name': 'basic',
                 'home': '/run/shm',
+                'has_management_node': 'False',
+                'ec2_config': {
+                    '--image-id': 'ami-6e7bd919',
+                },
                 'command': 'basic',
                 'properties': {
                     'basicdb.verbose': 'false',
+                    'hosts': ','.join(hosts.env.roledefs['server']),
                 }
     },
 

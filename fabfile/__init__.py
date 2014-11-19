@@ -5,6 +5,7 @@
 from amazon import amazon_start      as ec2_up
 from amazon import amazon_terminate  as ec2_down
 from amazon import amazon_status  as ec2_status
+from amazon import test           as ec2_test
 
 from ycsb import start_db_man           as ycsb_start_db_man
 from ycsb import start_db               as ycsb_start_db

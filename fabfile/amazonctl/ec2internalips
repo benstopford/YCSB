@@ -1,5 +1,5 @@
 #!/bin/sh
 
-[ "$#" -eq 1 ] || die "1 arguments required, $# provided:\nusage ec2ips [tag]"
+[ "$#" -eq 1 ] || die
 
 aws ec2 describe-instances --filters "Name=tag-value,Values=$1" | grep IPADDRESS | awk {'print $4'} | uniq

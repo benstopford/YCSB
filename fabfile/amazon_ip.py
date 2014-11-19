@@ -14,6 +14,12 @@ def get_internal_ips(type):
     print "%s %s internal IPs: %s"  % (out.count('\n'), type ,out.replace("\n",", "))
     return out
 
+def get_instance_ids_for_tag(tag):
+    out = Popen(["%sec2instanceids" % dir, tag], stdout=PIPE).communicate()[0]
+    print "%s %s internal IPs: %s"  % (out.count('\n'), type ,out.replace("\n",", "))
+    return out
+
+
 
 
 

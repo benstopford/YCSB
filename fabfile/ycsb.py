@@ -284,7 +284,7 @@ def kill_db_man(db,force=False):
 
 
 @roles('client')
-def clean_logs(force=False, db=None):
+def clean_logs(force=True, db=None):
     """Removes all logs from /run/shm"""
     home = '/run/shm'
     if db:

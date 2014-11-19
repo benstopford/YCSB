@@ -69,7 +69,7 @@ def start(database, tag, node_count):
         wait_for_tagged_hosts_to_start(tag, node_count)
 
 
-def start_ycsb_instances():
+def start_ycsb_instances(): #todo this could be refactored to remove duplication with start db
     node_count = int(env.ycsb_node_count)
     current = len(get_external_ips('YCSB', False).split())
 
@@ -115,7 +115,9 @@ def wait_for_tagged_hosts_to_start(tag, count):
         print "Waiting for %s hosts to start. Currently %s" % (count, len(get_external_ips(tag, False).split()))
         time.sleep(1)
 
-    # Test the ssh connection with test connection with retries
+    print 'All hosts started'
+
+    # Test the ssh connection with retries
     execute(
         test_connection_with_wait,
         hosts=get_external_ips(tag, False).split()

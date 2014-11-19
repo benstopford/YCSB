@@ -109,7 +109,12 @@ sleep 3; \
             '--image-id': 'ami-a42884d3'
             # test node 'ami-6e7bd919', official mongo base = ami-a42884d3, my ulimit increase ami-5a61d72d
         },
-
+        'pre-reboot-settings': [
+            "chmod 777 /etc/security/limits.conf",
+            'if ! grep -q "\* soft nofile 20000" /etc/security/limits.conf; then echo "* soft nofile 20000" >> /etc/security/limits.conf; fi',
+            'if ! grep -q "\* hard nofile 20000" /etc/security/limits.conf; then echo "* hard nofile 20000" >> /etc/security/limits.conf; fi',
+            "chmod 644 /etc/security/limits.conf"
+        ],
         'start_db_man_script': [
             'sudo mkdir -p /data/configdb',
             'sudo chmod 777 /data/configdb',
@@ -136,7 +141,7 @@ sleep 3; \
         ],
 
         'properties': {
-            'mongodb:url': (
+            'mongodb.url': (
                 hosts.env.roledefs['server_private_ip'][0] + ":27028" if len(
                     hosts.env.roledefs['server_private_ip']) > 0 else ""),
             'mongodb.database': 'ycsb',

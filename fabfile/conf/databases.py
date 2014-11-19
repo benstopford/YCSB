@@ -79,6 +79,8 @@ sleep 3; \
         'home': '/home/%s' % hosts.env.user,  # logs go here
         'command': 'cassandra-cql',
         'has_management_node': 'False',
+        'ec2user':'ubuntu',
+        'instance-type':'m1.large',
         'ec2_config': {
             '--image-id': 'ami-8932ccfe',
             '--user-data': '"--clustername datalabs-cassandra --totalnodes ' + hosts.env.db_node_count + ' --version community'
@@ -101,8 +103,10 @@ sleep 3; \
         'home': '/home/%s' % hosts.env.user,
         'command': 'mongodb',
         'has_management_node': 'True',
+        'ec2user':'ec2-user',
+        'instance-type':'m1.large',
         'ec2_config': {
-            '--image-id': 'ami-5a61d72d',
+            '--image-id': 'ami-a42884d3'
             # test node 'ami-6e7bd919', official mongo base = ami-a42884d3, my ulimit increase ami-5a61d72d
         },
 
@@ -162,9 +166,16 @@ sleep 3; \
                 'name': 'basic',
                 'home': '/run/shm',
                 'has_management_node': 'False',
+                'instance-type':'t2.micro',
                 'ec2_config': {
                     '--image-id': 'ami-6e7bd919',
                 },
+                'pre-reboot-settings': [
+                    "chmod 777 /etc/security/limits.conf",
+                    'if ! grep -q "\* soft nofile 20000" /etc/security/limits.conf; then echo "* soft nofile 20000" >> /etc/security/limits.conf; fi',
+                    'if ! grep -q "\* hard nofile 20000" /etc/security/limits.conf; then echo "* hard nofile 20000" >> /etc/security/limits.conf; fi',
+                    "chmod 644 /etc/security/limits.conf"
+                ],
                 'command': 'basic',
                 'properties': {
                     'basicdb.verbose': 'false',

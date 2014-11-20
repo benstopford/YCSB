@@ -20,8 +20,8 @@ from pytz import timezone
 
 # remote citrusleaf machines
 tz = hosts.timezone
-clients = hosts.env.roledefs['client']
-servers = hosts.env.roledefs['server']
+clients = hosts.env.roledefs['ycsb_public_ip']
+servers = hosts.env.roledefs['db_public_ip']
 # benchmark file name, it bothers the CPU and consumes time and energy
 benchmark_script = 'execute.sh'
 

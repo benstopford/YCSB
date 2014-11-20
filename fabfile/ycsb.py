@@ -8,7 +8,7 @@ from conf import workloads
 from fabfile.helpers import get_db, get_workload, _at, get_outfilename, base_time, almost_nothing, get_properties, determine_file
 
 def _ycsbloadcmd(database, clientno, timestamp, target=None):
-    totalclients = len(env.roledefs['client'])
+    totalclients = len(env.roledefs['ycsb_public_ip'])
     cmd = workloads.root + '/bin/ycsb load %s -s' % database['command']
     for (key, value) in get_properties(database).items():
         if key == 'operationcount':
@@ -29,7 +29,7 @@ def _ycsbloadcmd(database, clientno, timestamp, target=None):
 
 def _ycsbdbinitcommand(database):
     cmd = 'bin/ycsb init %s -s' % database['command']
-    cmd += ' -p hosts=%s' % env.roledefs['server'][0]
+    cmd += ' -p hosts=%s' % env.roledefs['db_public_ip'][0]
     # outfile = get_outfilename(database['name'], 'load', 'out', timestamp)
     # errfile = get_outfilename(database['name'], 'load', 'err', timestamp)
     # cmd += ' > %s/%s' % (database['home'], outfile)
@@ -37,7 +37,7 @@ def _ycsbdbinitcommand(database):
     return cmd
 
 def _ycsbruncmd(database, workload, timestamp, target=None):
-    totalclients = len(env.roledefs['client'])
+    totalclients = len(env.roledefs['ycsb_public_ip'])
     cmd = workloads.root + '/bin/ycsb'
     cmd += ' run %s -s' % database['command']
     for file in workload['propertyfiles']:
@@ -58,10 +58,10 @@ def _ycsbruncmd(database, workload, timestamp, target=None):
 def _client_no():
     # env.all_hosts is empty for @parallel in fabric 1.3.2
     # return env.all_hosts.index(env.host)
-    return env.roledefs['client'].index(env.host)
+    return env.roledefs['ycsb_public_ip'].index(env.host)
 
 def _totalclients():
-    return len(env.roledefs['client'])
+    return len(env.roledefs['ycsb_public_ip'])
 
 @runs_once
 def intialise_tables(db):
@@ -69,7 +69,7 @@ def intialise_tables(db):
     local(_ycsbdbinitcommand(database))
 
 
-@roles('server_man')
+@roles('man_public_ip')
 def start_db_man(db):
     database = get_db(db)
     print 'Running initialisation script for database management node'
@@ -80,7 +80,7 @@ def start_db_man(db):
     else:
         print 'no management scripts specified for %s' % db
 
-@roles('server')
+@roles('db_public_ip')
 def start_db(db):
     database = get_db(db)
     print "Running install script for %s" % (database['name'])
@@ -90,11 +90,11 @@ def start_db(db):
         for line in script:
             #Process substitutions
             if "@MAN" in line:
-                management_node = env.roledefs['server_man'][0] #only support one managment node currently
+                management_node = env.roledefs['man_public_ip'][0] #only support one managment node currently
                 line = line.replace("@MAN", management_node)
-            if line.startswith("#LOOP_DB"):
-                line = line.replace("#LOOP_DB","")
-                for db in env.roledefs['server']:
+            if line.startswith("#FOR_ALL"):
+                line = line.replace("#FOR_ALL","")
+                for db in env.roledefs['db_public_ip']:
                     run(line.replace("@DB",db))
             else:
                 run(line)
@@ -102,7 +102,7 @@ def start_db(db):
         print 'no database start scripts specified for %s' % db
 
 
-@roles('client')
+@roles('ycsb_public_ip')
 def load(db, target=None):
     """Starts loading of data to the database"""
     timestamp = base_time()
@@ -111,12 +111,12 @@ def load(db, target=None):
     database = get_db(db)
     with cd(database['home']):
         if target is not None:
-            part = int(target) / len(env.roledefs['client'])
+            part = int(target) / len(env.roledefs['ycsb_public_ip'])
             run(_at(_ycsbloadcmd(database, clientno, timestamp, part), timestamp))
         else:
             run(_at(_ycsbloadcmd(database, clientno, timestamp), timestamp))
 
-@roles('client')
+@roles('ycsb_public_ip')
 def run_workload(db, workload, target=None):
     """Starts running of the workload"""
     timestamp = base_time()
@@ -125,12 +125,12 @@ def run_workload(db, workload, target=None):
     load = get_workload(workload)
     with cd(database['home']):
         if target is not None:
-            part = int(target) / len(env.roledefs['client'])
+            part = int(target) / len(env.roledefs['ycsb_public_ip'])
             run(_at(_ycsbruncmd(database, load, timestamp, part), timestamp))
         else:
             run(_at(_ycsbruncmd(database, load, timestamp), timestamp))
 
-@roles('client')
+@roles('ycsb_public_ip')
 def status(db):
     """ Shows status of the currently running YCSBs """
     with almost_nothing():
@@ -178,7 +178,7 @@ def status(db):
             # print ls_out
             print
 
-@roles('client')
+@roles('ycsb_public_ip')
 @parallel
 def get_log(db, regex='.*', do=False):
     """ Download *.err and *.out logs satisfying the regex to be transferred
@@ -258,7 +258,7 @@ def get_log(db, regex='.*', do=False):
                     local('rm -rf %s' % tempdir_local)
 
 
-@roles('client')
+@roles('ycsb_public_ip')
 def kill(force=False):
     """Kills YCSB processes"""
     with settings(warn_only=True):
@@ -266,7 +266,7 @@ def kill(force=False):
         if force or confirm(red("Do you want to kill Java on the client?")):
             run('sudo killall java')
 
-@roles('server')
+@roles('db_public_ip')
 def kill_db(db,force=False):
     """Kills DB processes"""
     with settings(warn_only=True):
@@ -274,7 +274,7 @@ def kill_db(db,force=False):
         for line in database['stop_db_script']:
             run(line)
 
-@roles('server_man')
+@roles('man_public_ip')
 def kill_db_man(db,force=False):
     """Kills DB processes"""
     with settings(warn_only=True):
@@ -283,7 +283,7 @@ def kill_db_man(db,force=False):
             run(line)
 
 
-@roles('client')
+@roles('ycsb_public_ip')
 def clean_logs(force=True, db=None):
     """Removes all logs from /run/shm"""
     home = '/run/shm'
@@ -299,12 +299,12 @@ def _build_and_upload():
     put('distribution/target/ycsb-0.1.4.tar.gz', '~/ycsb.tar.gz')
     print ""
 
-@roles('client')
+@roles('ycsb_public_ip')
 def deploy():
     """Builds and deploys YCSB to the clients"""
     upload_key()
     _build_and_upload()
-    client1 = env.roledefs['client_private_ip'][0]
+    client1 = env.roledefs['ycsb_private_ip'][0]
     print "pulling jars from each YCSB node from the distribution proxy:%s" % client1
     run('scp -o StrictHostKeyChecking=no -i %s %s:ycsb.tar.gz .' % (env.key_filename,client1))
     with cd('/opt'):

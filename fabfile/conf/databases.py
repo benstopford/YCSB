@@ -14,7 +14,7 @@ databases = {
                          'set': 'YCSB',
         },
         'status': {
-            'hosts': hosts.env.roledefs['server'][0:1],  # hosts on which to run the status command
+            'hosts': hosts.env.roledefs['db_public_ip'][0:1],  # hosts on which to run the status command
             'command': '/opt/citrusleaf/bin/clmonitor -e info'  #the status command
         },
         'failover': {
@@ -87,7 +87,50 @@ sleep 3; \
             # need to leave out the closing "
         },
         'properties': {
-            'hosts': ','.join(hosts.env.roledefs['server']),  # this shouldn't be here - it's dynamic not config
+            'hosts': ','.join(hosts.env.roledefs['db_public_ip']),  # this shouldn't be here - it's dynamic not config
+            'cassandra.readconsistencylevel': 'ONE',
+            'cassandra.writeconsistencylevel': 'ONE',  # ALL-sync/ONE-async
+        },
+        'pre-reboot-settings': [
+            "chmod 777 /etc/security/limits.conf",
+            'if ! grep -q "\* soft nofile 20000" /etc/security/limits.conf; then echo "* soft nofile 20000" >> /etc/security/limits.conf; fi',
+            'if ! grep -q "\* hard nofile 20000" /etc/security/limits.conf; then echo "* hard nofile 20000" >> /etc/security/limits.conf; fi',
+            "chmod 644 /etc/security/limits.conf"
+        ],
+        'start_db_man_script': [
+            'sudo mkdir -p /data/configdb',
+            'sudo chmod 777 /data/configdb',
+            # 'sudo chmod 446 /etc/mongod.conf',
+            # 'if ! grep -q "rs1" /etc/mongod.conf; then echo \'replSet = "rs1"\' >> /etc/mongod.conf; fi',
+            ' echo "mongod --configsvr --dbpath /data/configdb --port 27027 >config.txt 2>conferr.txt" | at now',
+            ],
+        'start_db_script': [
+                'sudo yum -y update',
+                'sudo touch /etc/yum.repos.d/datastax.repo',
+                'sudo chmod 777 /etc/yum.repos.d/datastax.repo',
+                'sudo echo "[datastax] \n name = DataStax Repo for Apache Cassandra\nbaseurl = http://rpm.datastax.com/community\nenabled = 1\ngpgcheck = 0" > /etc/yum.repos.d/datastax.repo',
+                'sudo chmod 644 /etc/yum.repos.d/datastax.repo',
+                'sudo yum -y install dsc12-1.2.10-1 cassandra12-1.2.10-1',
+                'sudo service cassandra stop',
+                'sudo rm -rf /var/lib/cassandra/*',
+                '',
+            ],
+    },
+
+    'cassandra-working': {
+        'name': 'cassandra',
+        'home': '/home/%s' % hosts.env.user,  # logs go here
+        'command': 'cassandra-cql',
+        'has_management_node': 'False',
+        'ec2user':'ubuntu',
+        'instance-type':'m1.large',
+        'ec2_config': {
+            '--image-id': 'ami-8932ccfe',
+            '--user-data': '"--clustername datalabs-cassandra --totalnodes ' + hosts.env.db_node_count + ' --version community'
+            # need to leave out the closing "
+        },
+        'properties': {
+            'hosts': ','.join(hosts.env.roledefs['db_public_ip']),  # this shouldn't be here - it's dynamic not config
             'cassandra.readconsistencylevel': 'ONE',
             'cassandra.writeconsistencylevel': 'ONE',  # ALL-sync/ONE-async
         },
@@ -129,29 +172,23 @@ sleep 3; \
             'mongo localhost:27028/ycsb --eval "sh.enableSharding(\'ycsb\')"',
             'mongo localhost:27028/ycsb --eval "sh.shardCollection(\'ycsb.usertable\', { \'_id\': \'hashed\' })"',
             'mongo localhost:27028/ycsb --eval "db.usertable.remove({})"',
-            # 'sudo sh -c "ulimit -n 65535 && exec su $LOGNAME"'
 
         ],
         'stop_db_script': [
             'sudo killall mongos',
             'sudo killall mongod'
         ],
+
         'stop_db_man_script': [
             'sudo killall mongod'
         ],
 
         'properties': {
-            'mongodb.url': ",".join([w + ":27028" for w in hosts.env.roledefs['server_private_ip']]),
+            'mongodb.url': ",".join([w + ":27028" for w in hosts.env.roledefs['db_private_ip']]),
             'mongodb.database': 'ycsb',
             'mongodb.writeConcern': 'normal',
             # 'mongodb.writeConcern': 'replicas_safe',
             'mongodb.readPreference': 'primaryPreferred',
-        },
-        'configdb': 'r5.citrusleaf.local',
-        'failover': {
-            'files': [],
-            'kill_command': '/usr/bin/killall -9 mongod',
-            'start_command': '~/mongo_run.sh',
         },
     },
 
@@ -168,21 +205,16 @@ sleep 3; \
     'basic': {  # fake database
                 'name': 'basic',
                 'home': '/run/shm',
-                'has_management_node': 'True',
+                'has_management_node': 'False',
                 'instance-type':'t2.micro',
                 'ec2_config': {
                     '--image-id': 'ami-6e7bd919',
                 },
-                'pre-reboot-settings': [
-                    "chmod 777 /etc/security/limits.conf",
-                    'if ! grep -q "\* soft nofile 20000" /etc/security/limits.conf; then echo "* soft nofile 20000" >> /etc/security/limits.conf; fi',
-                    'if ! grep -q "\* hard nofile 20000" /etc/security/limits.conf; then echo "* hard nofile 20000" >> /etc/security/limits.conf; fi',
-                    "chmod 644 /etc/security/limits.conf"
-                ],
                 'command': 'basic',
                 'properties': {
                     'basicdb.verbose': 'false',
-                    'hosts': ','.join(hosts.env.roledefs['server']),
+                    'hosts': ','.join(hosts.env.roledefs['db_public_ip']),
+                    'basic.url': ",".join([w + ":27028" for w in hosts.env.roledefs['db_private_ip']]),
                 }
     },
 

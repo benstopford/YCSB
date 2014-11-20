@@ -24,11 +24,11 @@ timezone = pytz.timezone('UTC')
 
 def generate_roledefs():
     return {
-        'client_private_ip': get_internal_ips("YCSB").split(),
-        'client': get_external_ips("YCSB").split(),
-        'server_private_ip': get_internal_ips("DB").split(),
-        'server': get_external_ips("DB").split(),
-        'server_man': get_external_ips("DB_MAN").split(),
+        'ycsb_private_ip': get_internal_ips("YCSB").split(),
+        'ycsb_public_ip': get_external_ips("YCSB").split(),
+        'db_private_ip': get_internal_ips("DB").split(),
+        'db_public_ip': get_external_ips("DB").split(),
+        'man_public_ip': get_external_ips("DB_MAN").split(),
     }
 
 

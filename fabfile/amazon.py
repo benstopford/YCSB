@@ -65,7 +65,7 @@ def start(database, tag, node_count):
             hosts=get_external_ips(tag).split()
         )
         reboot_instances(tag)
-        wait_for_tagged_hosts_to_start(tag, node_count)
+        # wait_for_tagged_hosts_to_start(tag, node_count)
 
 
 def start_ycsb_instances(): #todo this could be refactored to remove duplication with start db
@@ -99,6 +99,7 @@ def start_ycsb_instances(): #todo this could be refactored to remove duplication
                 if (word.startswith("i-")):
                     subprocess.call(["%sec2tag2" % dir, word, "YCSB"])
 
+    print 'YCSB nodes have been started. Waiting for them to be accessible (you can Ctrl-C out of this if you wish)'
     wait_for_tagged_hosts_to_start('YCSB', node_count)
 
 
@@ -136,7 +137,8 @@ def reboot_instances(tag):
 def set_db_ssh_user(database):
     # User must be set at database level so override global
     global env
-    env.user = database['ec2user']
+    if 'ec2user' in database:
+        env.user = database['ec2user']
 
 
 def set_ycsb_ssh_user():
@@ -165,7 +167,7 @@ def amazon_status():
 
 
 def test():
-    print get_db('mongodb')['properties']['mongodb.url']
+    print get_db('basic')['properties']['basic.url']
 
 
 

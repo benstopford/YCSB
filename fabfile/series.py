@@ -32,7 +32,7 @@ if LOCAL:
 else:
     # remote citrusleaf machines
     timezone = hosts.timezone
-    clients = hosts.env.roledefs['client']
+    clients = hosts.env.roledefs['ycsb_public_ip']
 
 #clients = [clients[0]]
 

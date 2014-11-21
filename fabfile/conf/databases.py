@@ -1,4 +1,5 @@
 import hosts
+import cassandra
 
 
 databases = {
@@ -74,50 +75,31 @@ sleep 3; \
         }
     },
 
-    'cassandra': {
+    'cassandra': { #from scratch
         'name': 'cassandra',
         'home': '/home/%s' % hosts.env.user,  # logs go here
         'command': 'cassandra-cql',
         'has_management_node': 'False',
-        'ec2user':'ubuntu',
-        'instance-type':'m1.large',
+        'ec2user':'ec2-user',
+        'instance-type':'t2.micro',
         'ec2_config': {
-            '--image-id': 'ami-8932ccfe',
-            '--user-data': '"--clustername datalabs-cassandra --totalnodes ' + hosts.env.db_node_count + ' --version community'
-            # need to leave out the closing "
+            '--image-id': 'ami-6e7bd919',
         },
         'properties': {
             'hosts': ','.join(hosts.env.roledefs['db_public_ip']),  # this shouldn't be here - it's dynamic not config
             'cassandra.readconsistencylevel': 'ONE',
             'cassandra.writeconsistencylevel': 'ONE',  # ALL-sync/ONE-async
         },
-        'pre-reboot-settings': [
+        'pre-reboot-settings': [ # move to a module: system.settings or something
             "chmod 777 /etc/security/limits.conf",
             'if ! grep -q "\* soft nofile 20000" /etc/security/limits.conf; then echo "* soft nofile 20000" >> /etc/security/limits.conf; fi',
             'if ! grep -q "\* hard nofile 20000" /etc/security/limits.conf; then echo "* hard nofile 20000" >> /etc/security/limits.conf; fi',
             "chmod 644 /etc/security/limits.conf"
         ],
-        'start_db_man_script': [
-            'sudo mkdir -p /data/configdb',
-            'sudo chmod 777 /data/configdb',
-            # 'sudo chmod 446 /etc/mongod.conf',
-            # 'if ! grep -q "rs1" /etc/mongod.conf; then echo \'replSet = "rs1"\' >> /etc/mongod.conf; fi',
-            ' echo "mongod --configsvr --dbpath /data/configdb --port 27027 >config.txt 2>conferr.txt" | at now',
-            ],
-        'start_db_script': [
-                'sudo yum -y update',
-                'sudo touch /etc/yum.repos.d/datastax.repo',
-                'sudo chmod 777 /etc/yum.repos.d/datastax.repo',
-                'sudo echo "[datastax] \n name = DataStax Repo for Apache Cassandra\nbaseurl = http://rpm.datastax.com/community\nenabled = 1\ngpgcheck = 0" > /etc/yum.repos.d/datastax.repo',
-                'sudo chmod 644 /etc/yum.repos.d/datastax.repo',
-                'sudo yum -y install dsc12-1.2.10-1 cassandra12-1.2.10-1',
-                'sudo service cassandra stop',
-                'sudo rm -rf /var/lib/cassandra/*',
-                '',
-            ],
+        'start_db_function': cassandra.install
     },
 
-    'cassandra-working': {
+    'cassandra-from-ami': {# frm ami
         'name': 'cassandra',
         'home': '/home/%s' % hosts.env.user,  # logs go here
         'command': 'cassandra-cql',

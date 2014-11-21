@@ -1,6 +1,5 @@
 from fabric.api import env
 from fabfile.amazon_ip import *
-from fabric.api import env
 import pytz
 
 env.db_node_count = "2"
@@ -21,18 +20,15 @@ env.show = ['debug']
 # hosts timezone (required to correctly schedule ycsb tasks)
 timezone = pytz.timezone('UTC')
 
-
-def generate_roledefs():
-    return {
-        'ycsb_private_ip': get_internal_ips("YCSB").split(),
-        'ycsb_public_ip': get_external_ips("YCSB").split(),
-        'db_private_ip': get_internal_ips("DB").split(),
-        'db_public_ip': get_external_ips("DB").split(),
-        'man_public_ip': get_external_ips("DB_MAN").split(),
+def refresh_roledefs():
+    env.roledefs =  {
+        'ycsb_private_ip': get_internal_ips("YCSB",True).split(),
+        'ycsb_public_ip': get_external_ips("YCSB",True).split(),
+        'db_private_ip': get_internal_ips("DB",True).split(),
+        'db_public_ip': get_external_ips("DB",True).split(),
+        'man_public_ip': get_external_ips("DB_MAN",True).split(),
     }
-
-
-env.roledefs = generate_roledefs()
+refresh_roledefs()
 
 
 

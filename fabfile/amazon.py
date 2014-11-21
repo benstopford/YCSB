@@ -128,14 +128,6 @@ def amazon_start(db):
     start_ycsb_instances()
 
 def test():
-    print env.roledefs
-    print 'that was the roledef'
-    db = get_db('cassandra')
+    database = get_db('cassandra')
     wait_for_tagged_hosts_to_start('DB', 2)
-
-
-
-
-
-
-
+    database['start_db_function']()

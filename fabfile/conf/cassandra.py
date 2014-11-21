@@ -1,6 +1,8 @@
 from fabric.api import *
 from shutil import *
 import os
+import time
+
 
 def install_cassandra():
     sudo("rm -f /etc/yum.repos.d/datastax.repo")
@@ -36,11 +38,12 @@ def make_substitutions(base, yaml):
     seed = env.roledefs['db_private_ip'][0]
     index = env.roledefs['db_public_ip'].index(env.host_string)
     host_internal_ip = env.roledefs['db_private_ip'][index]
-    
+
     with open(yaml, "wt") as fout:
         with open(base, "rt") as fin:
             for line in fin:
                 line = line.replace('seeds: "127.0.0.1"', 'seeds: "%s"' % seed)
+                line = line.replace('listen_address: localhost', 'listen_address: %s' % host_internal_ip)
                 line = line.replace('# broadcast_rpc_address: 1.2.3.4', 'broadcast_rpc_address: %s' % host_internal_ip)
                 fout.write(line)
         fout.write("\nauto_bootstrap: false")
@@ -54,16 +57,31 @@ def make_substitutions_and_push_yaml():
     copyfile(base, yaml)
 
     make_substitutions(base, yaml)
-        
+
     put(yaml)
     sudo('mv cassandra.yaml  /etc/cassandra/conf/cassandra.yaml')
     copyfile(yaml, yaml + env.host_string)
+    os.remove(yaml)
 
 
 def start_cassandra():
     sudo("service cassandra stop")
     sudo("rm -rf /var/lib/cassandra/*")
     sudo('service cassandra start')
+
+
+def wait_to_cluster():
+    expected_node_count = len(env.roledefs['db_public_ip'])
+    count = 0
+
+    while 1:
+        out = run('nodetool status | grep UN | wc -l', quiet=True)
+        if len(out) < 5 and int(out) == expected_node_count:
+            print 'Cassandra cluster formed with %s nodes' % int(out)
+            break
+        count += 1; time.sleep(1); print 'waiting for Casandra to cluster'
+        if count == 20:
+            raise Exception("Cassandra did not cluster! ...")
 
 
 def _install():
@@ -73,6 +91,9 @@ def _install():
     make_substitutions_and_push_yaml()
     start_cassandra()
 
+    # fix for node tool in this instalation
+    sudo("sudo sed -i 's/jamm-0.2.6.jar/jamm-0.2.8.jar/g'  /usr/share/cassandra/cassandra.in.sh")
+
 
 def install():
     """This template method allows you to configure your server - use the various roles defined to configure different nodes"""
@@ -81,6 +102,12 @@ def install():
         _install,
         hosts=env.roledefs['db_public_ip']
     )
+    execute(
+        wait_to_cluster,
+        hosts=env.roledefs['db_public_ip'][0]
+    )
+    print '********Cassandra is installed, running and clustered********'
+
 
 
 

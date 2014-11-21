@@ -22,7 +22,7 @@ def wait_for_tagged_hosts_to_start(tag, count):
     )
 
 def test_connection_with_wait():
-    with settings(connection_attempts=100, timeout=5):
+    with settings(connection_attempts=30, timeout=10): #5mins
         run("echo 'testing connection'")
 
 

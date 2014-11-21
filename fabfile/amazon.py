@@ -127,7 +127,8 @@ def amazon_start(db):
     set_ycsb_ssh_user()
     start_ycsb_instances()
 
+    refresh_roledefs()
+
 def test():
-    database = get_db('cassandra')
-    wait_for_tagged_hosts_to_start('DB', 2)
+    database = get_db('mongodb')
     database['start_db_function']()

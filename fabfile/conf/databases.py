@@ -1,5 +1,6 @@
 import hosts
 import cassandra
+import mongodb
 
 
 databases = {
@@ -116,11 +117,6 @@ sleep 3; \
             'cassandra.readconsistencylevel': 'ONE',
             'cassandra.writeconsistencylevel': 'ONE',  # ALL-sync/ONE-async
         },
-        'failover': {
-            'files': [],
-            'kill_command': '/usr/bin/killall -9 java',
-            'start_command': '/opt/cassandra/bin/cassandra',
-        },
     },
 
     'mongodb': {
@@ -150,7 +146,7 @@ sleep 3; \
         'start_db_script': [
             'echo "mongos --configdb @MAN:27027 --port 27028 >mongos.txt 2>mongosErr.txt" | at now',
             'sudo service mongod start',
-            '#LOOP_DB mongo localhost:27028/ycsb --eval "sh.addShard( \'@DB:27017\')"',
+            '#FOR_ALL mongo localhost:27028/ycsb --eval "sh.addShard( \'@DB:27017\')"',
             'mongo localhost:27028/ycsb --eval "sh.enableSharding(\'ycsb\')"',
             'mongo localhost:27028/ycsb --eval "sh.shardCollection(\'ycsb.usertable\', { \'_id\': \'hashed\' })"',
             'mongo localhost:27028/ycsb --eval "db.usertable.remove({})"',
@@ -172,6 +168,7 @@ sleep 3; \
             # 'mongodb.writeConcern': 'replicas_safe',
             'mongodb.readPreference': 'primaryPreferred',
         },
+        'start_db_function': mongodb.install
     },
 
     'hbase': {
@@ -187,7 +184,7 @@ sleep 3; \
     'basic': {  # fake database
                 'name': 'basic',
                 'home': '/run/shm',
-                'has_management_node': 'False',
+                'has_management_node': 'True',
                 'instance-type':'t2.micro',
                 'ec2_config': {
                     '--image-id': 'ami-6e7bd919',

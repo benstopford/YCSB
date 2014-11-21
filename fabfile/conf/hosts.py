@@ -21,6 +21,7 @@ env.show = ['debug']
 timezone = pytz.timezone('UTC')
 
 def refresh_roledefs():
+    global env
     env.roledefs =  {
         'ycsb_private_ip': get_internal_ips("YCSB",True).split(),
         'ycsb_public_ip': get_external_ips("YCSB",True).split(),

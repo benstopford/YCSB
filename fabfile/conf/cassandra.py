@@ -40,11 +40,7 @@ def make_substitutions(base, yaml):
     with open(yaml, "wt") as fout:
         with open(base, "rt") as fin:
             for line in fin:
-                line = line.replace("# num_tokens: 256", "num_tokens: 256")
-                line = line.replace("cluster_name: 'Test Cluster'", "cluster_name: 'DataLabs Cluster'")
                 line = line.replace('seeds: "127.0.0.1"', 'seeds: "%s"' % seed)
-                # line = line.replace('listen_address: localhost', 'listen_address: %s' % host_internal_ip)
-                line = line.replace('endpoint_snitch: SimpleSnitch', 'endpoint_snitch: Ec2Snitch')
                 line = line.replace('# broadcast_rpc_address: 1.2.3.4', 'broadcast_rpc_address: %s' % host_internal_ip)
                 fout.write(line)
         fout.write("\nauto_bootstrap: false")
@@ -70,11 +66,8 @@ def start_cassandra():
     sudo('service cassandra start')
 
 
-def boot():
-    print 'installing and starting cassandra...'
-
+def _install():
     sudo("yum -y update")
-
     install_java()
     install_cassandra()
     make_substitutions_and_push_yaml()
@@ -83,9 +76,9 @@ def boot():
 
 def install():
     """This template method allows you to configure your server - use the various roles defined to configure different nodes"""
-    print 'Installing Cassandra on hosts: %s' % env.roledefs['db_public_ip']
+    print 'Installing & Starting Cassandra on hosts: %s' % env.roledefs['db_public_ip']
     execute(
-        boot,
+        _install,
         hosts=env.roledefs['db_public_ip']
     )
 

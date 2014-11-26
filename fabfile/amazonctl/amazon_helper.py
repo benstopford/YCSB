@@ -1,8 +1,9 @@
 from subprocess import *
 import time
-from fabric.api import *
+from fabric.api import settings, run, local, execute
+from fabfile.conf.hosts import ycsb_ec2_user
 from amazon_ip import *
-from conf.hosts import ycsb_ec2_user
+from socket import error as socket_error
 
 dir = "fabfile/amazonctl/"
 
@@ -12,7 +13,7 @@ def wait_for_tagged_hosts_to_start(tag, count):
         print "Waiting for %s hosts to start. Currently %s" % (count, len(get_external_ips(tag).split()))
         time.sleep(1)
 
-    print '%s %s hosts started' % (count, tag)
+    print '%s %s hosts are running' % (count, tag)
 
     # Test the ssh connection with retries
     # Use explicit execute call rather than fabric role defs as this method works for any tag
@@ -22,13 +23,18 @@ def wait_for_tagged_hosts_to_start(tag, count):
     )
 
 def test_connection_with_wait():
-    with settings(connection_attempts=30, timeout=10): #5mins
-        run("echo 'testing connection'")
-
+    with settings(connection_attempts=30, timeout=10, warn_only=True): #5mins
+        while True:
+            try:
+                run("echo 'Testing ssh connection...'")
+            except socket_error:
+                continue
+            break
 
 def reboot_instances(tag):
     ids = get_instance_ids_for_tag(tag).split()
     local("aws ec2 reboot-instances --instance-ids %s" % " ".join(ids))
+    time.sleep(5)
 
 
 def set_db_ssh_user(database):
@@ -41,18 +47,6 @@ def set_db_ssh_user(database):
 def set_ycsb_ssh_user():
     # set user back to ycsb user
     env.user = ycsb_ec2_user
-
-
-def amazon_terminate():
-    out = Popen(["%sec2terminate" % dir], stdout=PIPE).communicate()[0]
-    print out
-
-
-def amazon_status():
-    out = Popen(["%sec2status" % dir], stdout=PIPE).communicate()[0]
-    print out
-
-
 
 
 

@@ -1,20 +1,15 @@
 root = '/opt/ycsb'  #root of YCSB installation
 
-TIME_DURATION = 60*40 #40 Minutes
+TIME_DURATION = 60*20 #5 Minutes
 
-data = {    #global YSCB properties
-    #'recordcount': 200000000,  #SSD
-    #'recordcount': 500000000,  #SSD
+data = {
+    #global YSCB properties
     'recordcount':  100000,    #RAM
     'fieldcount': 10,
     'fieldlength': 10,
     #'fieldnameprefix': 'f',
     'operationcount': 100000,
-
-    # 'operationcount': 100000*TIME_DURATION, # 40min at 1000k
     'maxexecutiontime': TIME_DURATION,      # 40min
-    #'maxexecutiontime': 600,      # 10min
-
     'threadcount': 30,
     'workload': 'com.yahoo.ycsb.workloads.CoreWorkload',
     'exportmeasurementsinterval': 30000,

@@ -1,8 +1,6 @@
 from fabric.api import *
 from shutil import *
 import os
-import time
-
 
 def install_cassandra():
     sudo("rm -f /etc/yum.repos.d/datastax.repo")
@@ -18,7 +16,6 @@ def install_cassandra():
     sudo('yum -y install dsc21')
     sudo('chmod 777 /var/lib/cassandra')
 
-
 def install_java():
     java_version = run("java -version")
     if "Java(TM) SE Runtime Environment (build 1.7.0_25-b15)" not in java_version:
@@ -32,7 +29,6 @@ def install_java():
         run("java -version")
     else:
         print 'Java is correct, proceeding\n'
-
 
 def make_substitutions(base, yaml):
     seed = env.roledefs['db_private_ip'][0]
@@ -64,50 +60,30 @@ def make_substitutions_and_push_yaml():
     os.remove(yaml)
 
 
-def start_cassandra():
-    sudo("service cassandra stop")
-    sudo("rm -rf /var/lib/cassandra/*")
-    sudo('service cassandra start')
-
-
-def wait_to_cluster():
-    expected_node_count = len(env.roledefs['db_public_ip'])
-    count = 0
-
-    while 1:
-        out = run('nodetool status | grep UN | wc -l', quiet=True)
-        if len(out) < 5 and int(out) == expected_node_count:
-            print 'Cassandra cluster formed with %s nodes' % int(out)
-            break
-        count += 1; time.sleep(1); print 'waiting for Casandra to cluster'
-        if count == 20:
-            raise Exception("Cassandra did not cluster! ...")
-
-
+@parallel
 def _install():
     sudo("yum -y update")
     install_java()
     install_cassandra()
+
+
+def _configure():
     make_substitutions_and_push_yaml()
-    start_cassandra()
 
     # fix for node tool in this instalation
     sudo("sudo sed -i 's/jamm-0.2.6.jar/jamm-0.2.8.jar/g'  /usr/share/cassandra/cassandra.in.sh")
 
 
 def install():
-    """This template method allows you to configure your server - use the various roles defined to configure different nodes"""
-    print 'Installing & Starting Cassandra on hosts: %s' % env.roledefs['db_public_ip']
-    execute(
+    print 'Installing Cassandra on hosts: %s' % env.roledefs['db_public_ip']
+
+    execute( #install in parallel
         _install,
         hosts=env.roledefs['db_public_ip']
     )
     execute(
-        wait_to_cluster,
-        hosts=env.roledefs['db_public_ip'][0]
+        _configure,
+        hosts=env.roledefs['db_public_ip']
     )
-    print '********Cassandra is installed, running and clustered********'
-
-
-
+    print '********Cassandra is installed********'
 

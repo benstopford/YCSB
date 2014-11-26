@@ -69,42 +69,11 @@ def intialise_tables(db):
     local(_ycsbdbinitcommand(database))
 
 
-@roles('man_public_ip')
-def start_db_man(db):
-    database = get_db(db)
-    print 'Running initialisation script for database management node'
-    if 'start_db_man_script' in database.keys():
-        script = database['start_db_man_script']
-        for line in script:
-            run(line)
-    else:
-        print 'no management scripts specified for %s' % db
-
-@roles('db_public_ip')
-def start_db(db):
-    database = get_db(db)
-    print "Running install script for %s" % (database['name'])
-
-    if 'start_db_script' in database.keys():
-        script = database['start_db_script']
-        for line in script:
-            #Process substitutions
-            if "@MAN" in line:
-                management_node = env.roledefs['man_public_ip'][0] #only support one managment node currently
-                line = line.replace("@MAN", management_node)
-            if line.startswith("#FOR_ALL"):
-                line = line.replace("#FOR_ALL","")
-                for db in env.roledefs['db_public_ip']:
-                    run(line.replace("@DB",db))
-            else:
-                run(line)
-    else:
-        print 'no database start scripts specified for %s' % db
-
-
 @roles('ycsb_public_ip')
 def load(db, target=None):
     """Starts loading of data to the database"""
+    intialise_tables(db)
+
     timestamp = base_time()
     print green(timestamp, bold = True)
     clientno = _client_no()
@@ -180,7 +149,7 @@ def status(db):
 
 @roles('ycsb_public_ip')
 @parallel
-def get_log(db, regex='.*', do=False):
+def get_log(db, regex='.*', do=True):
     """ Download *.err and *.out logs satisfying the regex to be transferred
     OR transfer all logs in the batch dir
     """
@@ -259,28 +228,11 @@ def get_log(db, regex='.*', do=False):
 
 
 @roles('ycsb_public_ip')
-def kill(force=False):
+def kill():
     """Kills YCSB processes"""
     with settings(warn_only=True):
         run('ps -f -C java')
-        if force or confirm(red("Do you want to kill Java on the client?")):
-            run('sudo killall java')
-
-@roles('db_public_ip')
-def kill_db(db,force=False):
-    """Kills DB processes"""
-    with settings(warn_only=True):
-        database = get_db(db)
-        for line in database['stop_db_script']:
-            run(line)
-
-@roles('man_public_ip')
-def kill_db_man(db,force=False):
-    """Kills DB processes"""
-    with settings(warn_only=True):
-        database = get_db(db)
-        for line in database['stop_db_man_script']:
-            run(line)
+        run('sudo killall java')
 
 
 @roles('ycsb_public_ip')
@@ -318,6 +270,31 @@ def upload_key():
     run('sudo chmod 400 %s' % env.key_filename)
 
 
+
+@parallel
+def _test():
+    run('sleep 10')
+    run('echo "testing..."')
+
+@parallel
+def _test2():
+    run('starting test2')
+    run('sleep 10')
+    run('echo "testing..."')
+
+
 def test():
-    print "just for testing"
+    execute(
+        _test,
+        hosts=env.roledefs['db_public_ip'] +env.roledefs['man_public_ip'] +env.roledefs['ycsb_public_ip']
+    )
+    execute(
+        _test2,
+        hosts=env.roledefs['db_public_ip'] +env.roledefs['man_public_ip'] +env.roledefs['ycsb_public_ip']
+    )
+    print 'post parallel runs now'
+
+
+
+
 

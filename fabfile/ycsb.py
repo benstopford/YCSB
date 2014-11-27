@@ -15,8 +15,11 @@ def _ycsbloadcmd(database, clientno, timestamp, target=None):
             cmd += ' -p %s=%s' % (key, value / totalclients)
         else:
             cmd += ' -p %s=%s' % (key, value)
-    insertcount = workloads.data['recordcount'] / totalclients
-    insertstart = insertcount * clientno
+
+    starting_point = workloads.data['insertstart']
+    insertcount = starting_point + workloads.data['recordcount'] / totalclients
+    insertstart = starting_point + insertcount * clientno
+
     cmd += ' -p insertstart=%s' % insertstart
     cmd += ' -p insertcount=%s' % insertcount
     if target is not None:

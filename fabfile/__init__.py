@@ -17,6 +17,10 @@ from ycsb import kill                   as ycsb_kill
 from ycsb import clean_logs             as ycsb_clean
 from ycsb import intialise_tables       as ycsb_inittables
 
+from growing_group_test import growing_data_group_test as group_growing
+
+
+
 from ycsb import test                   as ycsb_test
 from amazonctl.ec2 import test          as ec2_test
 from amazonctl.db import test           as db_test

@@ -17,7 +17,7 @@ def _ycsbloadcmd(database, clientno, timestamp, target=None):
             cmd += ' -p %s=%s' % (key, value)
 
     starting_point = workloads.data['insertstart']
-    insertcount = starting_point + workloads.data['recordcount'] / totalclients
+    insertcount = workloads.data['recordcount'] / totalclients
     insertstart = starting_point + insertcount * clientno
 
     cmd += ' -p insertstart=%s' % insertstart
@@ -76,7 +76,6 @@ def intialise_tables(db):
 def load(db, target=None):
     """Starts loading of data to the database"""
     intialise_tables(db)
-
     timestamp = base_time()
     print green(timestamp, bold = True)
     clientno = _client_no()
@@ -149,6 +148,10 @@ def status(db):
             # ls_out = run('ls --format=single-column --sort=t')
             # print ls_out
             print
+
+
+
+
 
 @roles('ycsb_public_ip')
 @parallel
@@ -239,14 +242,10 @@ def kill():
 
 
 @roles('ycsb_public_ip')
-def clean_logs(force=True, db=None):
-    """Removes all logs from /run/shm"""
-    home = '/run/shm'
-    if db:
-        database = get_db(db)
-        home = database['home']
-    if force or confirm(red("Do you want to clear all logs from RAM?")):
-        run('rm -rf %s/*' % home)
+def clean_logs():
+    """Removes all logs"""
+    run('rm -rf ~/*.err')
+    run('rm -rf ~/*.out')
 
 @runs_once
 def _build_and_upload():
@@ -271,7 +270,6 @@ def upload_key():
     run('sudo rm -f %s' % env.key_filename)
     put( env.key_filename, '~/%s' % env.key_filename)
     run('sudo chmod 400 %s' % env.key_filename)
-
 
 
 @parallel

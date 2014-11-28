@@ -9,7 +9,7 @@ from conf import hosts, databases, workloads
 basetime = None
 
 
-def base_time(time=None, round_sec=60, tz = hosts.timezone):
+def base_time(time=None, round_sec=30, tz = hosts.timezone):
     """
     Get the next timestamp rounded to round_sec seconds
     the function returns some future time rounded accordingly
@@ -24,6 +24,10 @@ def base_time(time=None, round_sec=60, tz = hosts.timezone):
     seconds = (time - begin).seconds
     rounding = (seconds + round_sec * 1.5) // round_sec * round_sec
     return time + timedelta(0, rounding-seconds, -time.microsecond)# + timedelta(60*24) #To the next day issue
+
+def reset_base_time():
+    global basetime
+    basetime = None
 
 def almost_nothing():
     #return settings(hide('running', 'warnings', 'stdout', 'stderr'), warn_only=True)

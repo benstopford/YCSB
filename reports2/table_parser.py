@@ -1,20 +1,29 @@
 import os
 import re
 
+number = 0
 
-columns = {'node': {'index': 0, 'Name': 'Node Id', 'dtype': 'object'},
-           'date': {'index': 1, 'Name': 'Date', 'dtype': 'object'},
-           'time': {'index': 2, 'Name': 'Time', 'dtype': 'object'},
-           'db': {'index': 3, 'Name': 'DB', 'dtype': 'object'},
-           'workload': {'index': 4, 'Name': 'Workload', 'dtype': 'object'},
-           'key-start': {'index': 5, 'Name': 'Keyspace Start Point', 'dtype': 'float32'},
-           'throughput': {'index': 6, 'Average Throughput(ops/sec)': 'Node Id', 'dtype': 'float32'},
-           'insert-lat': {'index': 7, 'Name': 'InsertLatency(us)', 'dtype': 'float32'},
-           'read-lat': {'index': 8, 'Name': 'ReadLatency(us)', 'dtype': 'float32'},
-           'update-lat': {'index': 9, 'Name': 'UpdateLatency(us)', 'dtype': 'float32'},
-           'recordcount': {'index': 10, 'Name': 'RecordCount', 'dtype': 'float32'},
-           'fieldcount': {'index': 11, 'Name': 'FieldCount', 'dtype': 'float32'},
-           'fieldlength': {'index': 12, 'Name': 'FieldLength(B)', 'dtype': 'float32'}
+
+def increment():
+    global number
+    current = number
+    number += 1
+    return current
+
+
+columns = {'node': {'index': increment(), 'Name': 'Node Id', 'dtype': 'object'},
+           'date': {'index': increment(), 'Name': 'Date', 'dtype': 'object'},
+           'time': {'index': increment(), 'Name': 'Time', 'dtype': 'object'},
+           'db': {'index': increment(), 'Name': 'DB', 'dtype': 'object'},
+           'workload': {'index': increment(), 'Name': 'Workload', 'dtype': 'object'},
+           'key-start': {'index': increment(), 'Name': 'Keyspace Start Point', 'dtype': 'float32'},
+           'throughput': {'index': increment(), 'Average Throughput(ops/sec)': 'Node Id', 'dtype': 'float32'},
+           'insert-lat': {'index': increment(), 'Name': 'InsertLatency(us)', 'dtype': 'float32'},
+           'read-lat': {'index': increment(), 'Name': 'ReadLatency(us)', 'dtype': 'float32'},
+           'update-lat': {'index': increment(), 'Name': 'UpdateLatency(us)', 'dtype': 'float32'},
+           'recordcount': {'index': increment(), 'Name': 'RecordCount', 'dtype': 'float32'},
+           'fieldcount': {'index': increment(), 'Name': 'FieldCount', 'dtype': 'float32'},
+           'fieldlength': {'index': increment(), 'Name': 'FieldLength(B)', 'dtype': 'float32'}
 }
 
 
@@ -36,7 +45,7 @@ def data_table(dir):
             # DB
             result[columns['db']['index']] = file_details[2]
 
-            #Format time
+            # Format time
             result[columns['time']['index']] = file_details[1].replace('-', ':')
 
             #Workload
@@ -71,6 +80,5 @@ def data_table(dir):
                     result[columns['update-lat']['index']] = line.split(", ")[-1][:-1]
 
             table.append(result)
-
 
     return table;

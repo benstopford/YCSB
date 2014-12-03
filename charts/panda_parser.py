@@ -14,7 +14,7 @@ def convert_to_panda(data_table, columns):
     for key, value in frame.items():
         frame[key] = []
 
-    #Transpose as panda works by column not by row
+    # Transpose as panda works by column not by row
     for row in data_table:
         for key, value in frame.items():
             index = columns[key]['index']
@@ -26,7 +26,7 @@ def convert_to_panda(data_table, columns):
         type = col_info['dtype']
 
         #convert any ''->'0' for numeric columns
-        if type is 'float32':
+        if type in ['float32', 'float64', 'int32', 'int64']:
             for index, item in enumerate(value):
                 if item == '':
                     value[index] = '0'
@@ -34,12 +34,3 @@ def convert_to_panda(data_table, columns):
         frame[key] = pd.Series(value, dtype=type)
 
     return pd.DataFrame(frame)
-
-
-
-
-    # is_node_one = df['node'] == "c1"
-    #
-    # print df[is_node_one][['key-start', 'throughput']].groupby('key-start').aggregate(sum)
-    # # print df.groupby('key-start').aggregate(sum)
-

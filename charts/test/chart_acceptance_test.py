@@ -13,10 +13,8 @@ class TestProcessor(unittest.TestCase):
                    ",['load-throughput', 1798.9889, 0]" \
                    ",['wla-throughput', 2049.0405, 2233.0913]" \
                    "]"
-
-
-        throughput = chart.throughput("test/data/incremental_runs_from_different_hosts")
-        self.assertEqual(expected, throughput)
+        source_files = "test/data/incremental_runs_from_different_hosts"
+        self.assertEqual(expected, chart.throughput(source_files))
 
 
 def main():

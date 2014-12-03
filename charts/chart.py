@@ -1,8 +1,10 @@
+import shutil
 import numpy
 import panda_parser
 import table_parser
 import pandas as pd
 import math
+
 
 def enum(**enums):
     return type('Enum', (), enums)
@@ -19,8 +21,7 @@ def agg_throughput(df, workload):
 
 
 def throughput(dir):
-
-    #Create the raw table from the log files
+    # Create the raw table from the log files
     raw = table_parser.data_table(dir)
 
     #Convert to panda
@@ -32,8 +33,8 @@ def throughput(dir):
 
     #Define the columns we want in the chart
     merged = pd.concat([
-                           (agg_throughput(df, Workloads.LOAD)),
-                           (agg_throughput(df, Workloads.A))
+                           agg_throughput(df, Workloads.LOAD),
+                           agg_throughput(df, Workloads.A)
                        ], axis=1)
     merged.columns = ['load-throughput', 'wla-throughput']
 
@@ -49,5 +50,20 @@ def throughput(dir):
 
     return output
 
+
+def insert_data_into_chart(data):
+    base = 'charts/latest/data.js.template'
+    out = 'charts/latest/data.js'
+
+    print 'generating chart data: '+out
+    print 'data: '+data
+
+    with open(out, "wt") as fout:
+        with open(base, "rt") as fin:
+            for line in fin:
+                if '#data#' in line:
+                    line = line.replace('#data#', data)
+                fout.write(line)
+                print line
 
 

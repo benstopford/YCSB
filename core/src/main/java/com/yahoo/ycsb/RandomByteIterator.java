@@ -4,9 +4,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License"); you
  * may not use this file except in compliance with the License. You
  * may obtain a copy of the License at
- *                                                              
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- *                                                            
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
@@ -16,72 +16,97 @@
  */
 package com.yahoo.ycsb;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 /**
- *  A ByteIterator that generates a random sequence of bytes.
+ * A ByteIterator that generates a random sequence of bytes.
  */
 public class RandomByteIterator extends ByteIterator {
-  private long len;
-  private long off;
-  private int bufOff;
-  private byte[] buf;
+    private long len;
+    private long off;
+    private int bufOff;
+    private byte[] buf;
+    private static AtomicLong consumedBytes = new AtomicLong();
 
-  @Override
-  public boolean hasNext() {
-    return (off + bufOff) < len;
-  }
-
-  private void fillBytesImpl(byte[] buffer, int base) {
-    int bytes = Utils.random().nextInt();
-    try {
-      buffer[base+0] = (byte)(((bytes) & 31) + ' ');
-      buffer[base+1] = (byte)(((bytes >> 5) & 31) + ' ');
-      buffer[base+2] = (byte)(((bytes >> 10) & 31) + ' ');
-      buffer[base+3] = (byte)(((bytes >> 15) & 31) + ' ');
-      buffer[base+4] = (byte)(((bytes >> 20) & 31) + ' ');
-      buffer[base+5] = (byte)(((bytes >> 25) & 31) + ' ');
-    } catch (ArrayIndexOutOfBoundsException e) { /* ignore it */ }
-  }
-
-  private void fillBytes() {
-    if(bufOff ==  buf.length) {
-      fillBytesImpl(buf, 0);
-      bufOff = 0;
-      off += buf.length;
+    @Override
+    public boolean hasNext() {
+        return (off + bufOff) < len;
     }
-  }
 
-  public RandomByteIterator(long len) {
-    this.len = len;
-    this.buf = new byte[6];
-    this.bufOff = buf.length;
-    fillBytes();
-    this.off = 0;
-  }
-
-  public byte nextByte() {
-    fillBytes();
-    bufOff++;
-    return buf[bufOff-1];
-  }
-
-  @Override
-  public int nextBuf(byte[] buffer, int bufferOffset) {
-    int ret;
-    if(len - off < buffer.length - bufferOffset) {
-      ret = (int)(len - off);
-    } else {
-      ret = buffer.length - bufferOffset;
+    private void fillBytesImpl(byte[] buffer, int base) {
+        int bytes = Utils.random().nextInt();
+        try {
+            buffer[base + 0] = (byte) (((bytes) & 31) + ' ');
+            buffer[base + 1] = (byte) (((bytes >> 5) & 31) + ' ');
+            buffer[base + 2] = (byte) (((bytes >> 10) & 31) + ' ');
+            buffer[base + 3] = (byte) (((bytes >> 15) & 31) + ' ');
+            buffer[base + 4] = (byte) (((bytes >> 20) & 31) + ' ');
+            buffer[base + 5] = (byte) (((bytes >> 25) & 31) + ' ');
+        } catch (ArrayIndexOutOfBoundsException e) { /* ignore it */ }
     }
-    int i;
-    for(i = 0; i < ret; i+=6) {
-      fillBytesImpl(buffer, i + bufferOffset);
-    }
-    off+=ret;
-    return ret + bufferOffset;
-  }
 
-  @Override
-  public long bytesLeft() {
-    return len - off - bufOff;
-  }
+    private void fillBytes() {
+        if (bufOff == buf.length) {
+            fillBytesImpl(buf, 0);
+            bufOff = 0;
+            off += buf.length;
+        }
+    }
+
+    public RandomByteIterator(long len) {
+        this.len = len;
+        this.buf = new byte[6];
+        this.bufOff = buf.length;
+        fillBytes();
+        this.off = 0;
+        increment(len);
+    }
+
+    private void increment(long by){
+        while(true){
+            long current = consumedBytes.get();
+            long next = current + by;
+
+            if(consumedBytes.compareAndSet(current, next)){
+                return;
+            }
+        }
+    }
+
+    public byte nextByte() {
+        fillBytes();
+        bufOff++;
+        return buf[bufOff - 1];
+    }
+
+    @Override
+    public int nextBuf(byte[] buffer, int bufferOffset) {
+        int ret;
+        if (len - off < buffer.length - bufferOffset) {
+            ret = (int) (len - off);
+        } else {
+            ret = buffer.length - bufferOffset;
+        }
+        int i;
+        for (i = 0; i < ret; i += 6) {
+            fillBytesImpl(buffer, i + bufferOffset);
+        }
+        off += ret;
+        return ret + bufferOffset;
+    }
+
+    @Override
+    public long bytesLeft() {
+        return len - off - bufOff;
+    }
+
+
+    public static long totalBytes() {
+        return consumedBytes.longValue();
+    }
+
+    public static long getTotalBytesWritten() {
+        return consumedBytes.longValue();
+    }
+
 }

@@ -17,17 +17,12 @@
 
 package com.yahoo.ycsb.workloads;
 
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.Properties;
-
 import com.yahoo.ycsb.*;
 import com.yahoo.ycsb.generator.*;
 import com.yahoo.ycsb.measurements.Measurements;
 
 import java.io.IOException;
-import java.util.AbstractMap;
-import java.util.HashMap;
+import java.util.*;
 
 /**
  * The core benchmark scenario. Represents a set of clients doing simple CRUD operations. The relative
@@ -313,6 +308,8 @@ public class CoreWorkload extends Workload {
         } else {
             throw new WorkloadException("Unknown field length distribution \"" + fieldlengthdistribution + "\"");
         }
+        System.out.println("Using fieldlengthgenerator:" + fieldlengthgenerator.getClass().getName());
+
         return fieldlengthgenerator;
     }
 

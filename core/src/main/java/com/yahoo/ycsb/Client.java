@@ -154,6 +154,7 @@ class ExportMeasurementsThread extends Thread {
             exporter.write("OVERALL", "Reconnections", recon);
             exporter.write("OVERALL", "RunTime(ms)", runtime);
             exporter.write("OVERALL", "Operations", opcount);
+            exporter.write("OVERALL", "DataWritten(B)", RandomByteIterator.getTotalBytesWritten());
             double throughput = 1000.0 * ((double) opcount) / ((double) runtime);
             exporter.write("OVERALL", "Throughput(ops/sec)", throughput);
             exporter.close();
@@ -528,6 +529,7 @@ public class Client {
             exporter.write("OVERALL", "RunTime(ms)", runtime);
             double throughput = 1000.0 * ((double) opcount) / ((double) runtime);
             exporter.write("OVERALL", "Throughput(ops/sec)", throughput);
+            exporter.write("OVERALL", "DataWritten(B)", RandomByteIterator.getTotalBytesWritten());
 
             Measurements.getMeasurements().exportMeasurements(exporter);
         } finally {

@@ -26,7 +26,7 @@ public class TestByteIterator {
         new RandomByteIterator(700);
         new RandomByteIterator(200);
         new RandomByteIterator(100);
-        assertEquals(1000, RandomByteIterator.totalBytes());
+        assertEquals(1000, RandomByteIterator.getTotalBytesWritten());
     }
 
 }

@@ -100,11 +100,6 @@ public class RandomByteIterator extends ByteIterator {
         return len - off - bufOff;
     }
 
-
-    public static long totalBytes() {
-        return consumedBytes.longValue();
-    }
-
     public static long getTotalBytesWritten() {
         return consumedBytes.longValue();
     }

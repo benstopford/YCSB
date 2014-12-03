@@ -72,6 +72,11 @@ def insert_data_into_chart(data):
             for line in fin:
                 if '#data#' in line:
                     line = line.replace('#data#', data)
+                if '#xlegend#' in line:
+                    line = line.replace('#xlegend#', 'Data Size (B)')
+                if '#ylegend#' in line:
+                    line = line.replace('#ylegend#', 'Operations/Sec')
+
                 fout.write(line)
                 print line
 

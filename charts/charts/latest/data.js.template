@@ -3,5 +3,5 @@ var data2 = {
     data: {
        #data#
     },
-    axis: { y: { min: 0 } }
+    axis: {x:{label:'#xlegend#'},  y: { min: 0, label:'#ylegend#' } }
 }

@@ -1,0 +1,141 @@
+YCSB Client 0.1
+Command line: -db com.yahoo.ycsb.db.MongoDbClient -s -p mongodb.url=172.31.18.181:27028,172.31.18.180:27028 -p workload=com.yahoo.ycsb.workloads.CoreWorkload -p updateretrycount=1000 -p mongodb.writeConcern=normal -p mongodb.database=ycsb -p recordcount=10000 -p exportmeasurementsinterval=30000 -p fieldcount=10 -p timeseries.granularity=100 -p threadcount=30 -p insertretrycount=10 -p readretrycount=1000 -p ignoreinserterrors=false -p reconnectionthroughput=10 -p insertstart=60000 -p maxexecutiontime=1200 -p mongodb.readPreference=primaryPreferred -p measurementtype=timeseries -p reconnectiontime=1000 -p operationcount=5000 -p fieldlength=10 -p insertstart=60000 -p insertcount=5000 -load
+Using Mongo URL: 172.31.18.180:27028
+Using Mongo URL: 172.31.18.181:27028
+Using Mongo URL: 172.31.18.180:27028
+Using Mongo URL: 172.31.18.180:27028
+Using Mongo URL: 172.31.18.181:27028
+Using Mongo URL: 172.31.18.181:27028
+new database url = 172.31.18.181:27028/ycsb
+new database url = 172.31.18.181:27028/ycsb
+new database url = 172.31.18.180:27028/ycsb
+new database url = 172.31.18.180:27028/ycsb
+new database url = 172.31.18.181:27028/ycsb
+new database url = 172.31.18.180:27028/ycsb
+Using Mongo URL: 172.31.18.181:27028
+new database url = 172.31.18.181:27028/ycsb
+Using Mongo URL: 172.31.18.181:27028
+new database url = 172.31.18.181:27028/ycsb
+Using Mongo URL: 172.31.18.180:27028
+new database url = 172.31.18.180:27028/ycsb
+Using Mongo URL: 172.31.18.181:27028
+new database url = 172.31.18.181:27028/ycsb
+Using Mongo URL: 172.31.18.180:27028
+new database url = 172.31.18.180:27028/ycsb
+Using Mongo URL: 172.31.18.181:27028
+new database url = 172.31.18.181:27028/ycsb
+Using Mongo URL: 172.31.18.180:27028
+new database url = 172.31.18.180:27028/ycsb
+Using Mongo URL: 172.31.18.180:27028
+new database url = 172.31.18.180:27028/ycsb
+Using Mongo URL: 172.31.18.181:27028
+new database url = 172.31.18.181:27028/ycsb
+Using Mongo URL: 172.31.18.181:27028
+new database url = 172.31.18.181:27028/ycsb
+ 0 sec: 0 operations; 
+Using Mongo URL: 172.31.18.181:27028
+new database url = 172.31.18.181:27028/ycsb
+Using Mongo URL: 172.31.18.180:27028
+new database url = 172.31.18.180:27028/ycsb
+Using Mongo URL: 172.31.18.181:27028
+new database url = 172.31.18.181:27028/ycsb
+Using Mongo URL: 172.31.18.180:27028
+new database url = 172.31.18.180:27028/ycsb
+Using Mongo URL: 172.31.18.181:27028
+new database url = 172.31.18.181:27028/ycsb
+Using Mongo URL: 172.31.18.180:27028
+new database url = 172.31.18.180:27028/ycsb
+Using Mongo URL: 172.31.18.181:27028
+new database url = 172.31.18.181:27028/ycsb
+Using Mongo URL: 172.31.18.180:27028
+new database url = 172.31.18.180:27028/ycsb
+Using Mongo URL: 172.31.18.180:27028
+new database url = 172.31.18.180:27028/ycsb
+Using Mongo URL: 172.31.18.180:27028
+new database url = 172.31.18.180:27028/ycsb
+Using Mongo URL: 172.31.18.181:27028
+new database url = 172.31.18.181:27028/ycsb
+Using Mongo URL: 172.31.18.181:27028
+new database url = 172.31.18.181:27028/ycsb
+Using Mongo URL: 172.31.18.181:27028
+new database url = 172.31.18.181:27028/ycsb
+Using Mongo URL: 172.31.18.181:27028
+new database url = 172.31.18.181:27028/ycsb
+mongo connection created with 172.31.18.181:27028/ycsb
+mongo connection created with 172.31.18.181:27028/ycsb
+mongo connection created with 172.31.18.181:27028/ycsb
+mongo connection created with 172.31.18.181:27028/ycsb
+mongo connection created with 172.31.18.180:27028/ycsb
+mongo connection created with 172.31.18.181:27028/ycsb
+mongo connection created with 172.31.18.180:27028/ycsb
+mongo connection created with 172.31.18.181:27028/ycsb
+mongo connection created with 172.31.18.180:27028/ycsb
+mongo connection created with 172.31.18.180:27028/ycsb
+mongo connection created with 172.31.18.181:27028/ycsb
+mongo connection created with 172.31.18.181:27028/ycsb
+mongo connection created with 172.31.18.180:27028/ycsb
+mongo connection created with 172.31.18.181:27028/ycsb
+mongo connection created with 172.31.18.180:27028/ycsb
+mongo connection created with 172.31.18.180:27028/ycsb
+mongo connection created with 172.31.18.181:27028/ycsb
+mongo connection created with 172.31.18.181:27028/ycsb
+mongo connection created with 172.31.18.181:27028/ycsb
+mongo connection created with 172.31.18.180:27028/ycsb
+mongo connection created with 172.31.18.181:27028/ycsb
+mongo connection created with 172.31.18.180:27028/ycsb
+mongo connection created with 172.31.18.181:27028/ycsb
+mongo connection created with 172.31.18.180:27028/ycsb
+mongo connection created with 172.31.18.181:27028/ycsb
+mongo connection created with 172.31.18.180:27028/ycsb
+mongo connection created with 172.31.18.180:27028/ycsb
+mongo connection created with 172.31.18.180:27028/ycsb
+mongo connection created with 172.31.18.181:27028/ycsb
+mongo connection created with 172.31.18.181:27028/ycsb
+ 2 sec: 2330 operations; 1165 current ops/sec;  
+ 3 sec: 4980 operations; 2383.09 current ops/sec;   
+[INSERT], 0, 35103.58260869565, 1150.0
+[INSERT], 100, 25852.119658119656, 1170.0
+[INSERT], 200, 25665.15652173913, 1150.0
+[INSERT], 300, 27058.504587155963, 1090.0
+[INSERT], 400, 27978.694444444445, 1080.0
+[INSERT], 500, 28439.326923076922, 1040.0
+[INSERT], 600, 26323.842105263157, 1140.0
+[INSERT], 700, 26572.660869565218, 1150.0
+[INSERT], 800, 22755.801587301587, 1260.0
+[INSERT], 900, 23427.06106870229, 1310.0
+[INSERT], 1000, 22577.648, 1250.0
+[INSERT], 1100, 22858.558823529413, 1360.0
+[INSERT], 1200, 21633.614285714284, 1400.0
+[INSERT], 1300, 20434.503401360544, 1470.0
+[INSERT], 1400, 19527.303225806452, 1550.0
+[INSERT], 1500, 18960.2625, 1600.0
+[INSERT], 1600, 15530.271794871795, 1950.0
+[INSERT], 1700, 13651.209090909091, 2200.0
+[INSERT], 1800, 12965.360869565216, 2300.0
+[INSERT], 1900, 13040.638766519824, 2270.0
+[INSERT], 2000, 12443.904958677685, 2420.0
+[INSERT], 2100, 11800.64609053498, 2430.0
+[INSERT], 2200, 12482.121951219513, 2460.0
+[INSERT], 2300, 11699.387351778656, 2530.0
+[INSERT], 2400, 12113.792682926829, 2460.0
+[INSERT], 2500, 12680.81779661017, 2360.0
+[INSERT], 2600, 12715.47899159664, 2380.0
+[INSERT], 2700, 11870.888888888889, 2520.0
+[INSERT], 2800, 11602.570370370371, 1350.0
+[INSERT], Operations, 4980
+[INSERT], Retries, 0
+[INSERT], AverageLatency(us), 17349.188353413654
+[INSERT], MinLatency(us), 1011
+[INSERT], MaxLatency(us), 131246
+[INSERT], Return=0, 4980
+[CLEANUP], 0, 2248.4666666666667, 300.0
+[CLEANUP], Operations, 30
+[CLEANUP], Retries, 0
+[CLEANUP], AverageLatency(us), 2248.4666666666667
+[CLEANUP], MinLatency(us), 210
+[CLEANUP], MaxLatency(us), 8833
+[OVERALL], Reconnections, 0.0
+[OVERALL], RunTime(ms), 2946.0
+[OVERALL], Operations, 4980.0
+[OVERALL], Throughput(ops/sec), 1690.4276985743381
+java -cp /opt/ycsb/mongodb-binding/lib/mongodb-binding-0.1.4.jar:/opt/ycsb/core/lib/core-0.1.4.jar com.yahoo.ycsb.Client -db com.yahoo.ycsb.db.MongoDbClient -s -p mongodb.url=172.31.18.181:27028,172.31.18.180:27028 -p workload=com.yahoo.ycsb.workloads.CoreWorkload -p updateretrycount=1000 -p mongodb.writeConcern=normal -p mongodb.database=ycsb -p recordcount=10000 -p exportmeasurementsinterval=30000 -p fieldcount=10 -p timeseries.granularity=100 -p threadcount=30 -p insertretrycount=10 -p readretrycount=1000 -p ignoreinserterrors=false -p reconnectionthroughput=10 -p insertstart=60000 -p maxexecutiontime=1200 -p mongodb.readPreference=primaryPreferred -p measurementtype=timeseries -p reconnectiontime=1000 -p operationcount=5000 -p fieldlength=10 -p insertstart=60000 -p insertcount=5000 -load

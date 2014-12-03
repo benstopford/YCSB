@@ -4,11 +4,14 @@ TIME_DURATION = 20*60  #seconds
 data = {
     #global YSCB properties
     'insertstart':0,                        #Increase this if there is already data in the DB
-    'recordcount':  10000,                #The keyspace that will be created
+    'recordcount':  10000,                #not sure this is what it says it is. insert count appears to cover inserted data
     'operationcount': 10000,              #Total operations (writes or reads)
+    'insertcount': 10000,                 #how many to write during load
 
-    'fieldcount': 10,
-    'fieldlength': 10,
+    'fieldcount': 10,                      # the value is a list of this many byte arrays
+    'fieldlength': 10,                     # each of the byte arrays is either exactly or approximately this length depending on the policy
+    'fieldlengthdistribution':'zipfian',   # can also be constant or uniform
+
     #'fieldnameprefix': 'f',
     'maxexecutiontime': TIME_DURATION,      # 40min
     'threadcount': 30,

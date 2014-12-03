@@ -24,14 +24,19 @@ def throughput(dir):
     # Create the raw table from the log files
     raw = table_parser.data_table(dir)
 
-    #Convert to panda
+    # Convert to panda
     df = panda_parser.convert_to_panda(raw, table_parser.column_defs)
 
     #define the x axis as the iteration (which maps to the data loaded)
+    print df['recordcount'].unique()
+    print df['fieldcount'].unique()
+    print df['fieldlength'].unique()
+
     x_axis = list(df['key-start'].unique())
     x_axis.insert(0, 'x')
 
-    #Define the columns we want in the chart
+    #Define the columns we want in the chart and merge them into a single table
+    #(merging on the key which is key-start)
     merged = pd.concat([
                            agg_throughput(df, Workloads.LOAD),
                            agg_throughput(df, Workloads.A)
@@ -55,8 +60,8 @@ def insert_data_into_chart(data):
     base = 'charts/latest/data.js.template'
     out = 'charts/latest/data.js'
 
-    print 'generating chart data: '+out
-    print 'data: '+data
+    print 'generating chart data: ' + out
+    print 'data: ' + data
 
     with open(out, "wt") as fout:
         with open(base, "rt") as fin:

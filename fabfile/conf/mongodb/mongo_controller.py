@@ -26,6 +26,7 @@ def start_mongod():
     sudo('sudo chmod 777 /var/log/mongodb/mongod.log')
     out = run('cat  /var/log/mongodb/mongod.log | grep "waiting for connections on port" | wc -l')
     if out != "1":
+        run('tail  /var/log/mongodb/mongod.log')
         raise Exception('Mongo failed to start')
 
     wait_for_connection('localhost:27017')

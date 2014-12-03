@@ -10,7 +10,7 @@ data = {
 
     'fieldcount': 10,                      # the value is a list of this many byte arrays
     'fieldlength': 10,                     # each of the byte arrays is either exactly or approximately this length depending on the policy
-    'fieldlengthdistribution':'zipfian',   # can also be constant or uniform
+    'fieldlengthdistribution':'constant',   # can also be zipfian or uniform but zipfian isn't working currently
 
     #'fieldnameprefix': 'f',
     'maxexecutiontime': TIME_DURATION,      # 40min

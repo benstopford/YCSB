@@ -23,7 +23,8 @@ column_defs = {'node': {'index': increment(), 'Name': 'Node Id', 'dtype': 'objec
            'update-lat': {'index': increment(), 'Name': 'UpdateLatency(us)', 'dtype': 'float32'},
            'recordcount': {'index': increment(), 'Name': 'RecordCount', 'dtype': 'int32'},
            'fieldcount': {'index': increment(), 'Name': 'FieldCount', 'dtype': 'int32'},
-           'fieldlength': {'index': increment(), 'Name': 'FieldLength(B)', 'dtype': 'int32'}
+           'fieldlength': {'index': increment(), 'Name': 'FieldLength(B)', 'dtype': 'int32'},
+           'operations': {'index': increment(), 'Name': 'Operations', 'dtype': 'float32'}
 }
 
 
@@ -69,6 +70,9 @@ def data_table(dir):
 
                 if line.startswith('[OVERALL]') and 'Throughput' in line:
                     result[column_defs['throughput']['index']] = line.split(", ")[-1][:-1]
+
+                if line.startswith('[OVERALL]') and 'Operations' in line:
+                    result[column_defs['operations']['index']] = line.split(", ")[-1][:-1]
 
                 if line.startswith('[INSERT]') and 'AverageLatency' in line:
                     result[column_defs['insert-lat']['index']] = line.split(", ")[-1][:-1]

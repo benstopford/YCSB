@@ -27,12 +27,16 @@ def throughput(dir):
     # Convert to panda
     df = panda_parser.convert_to_panda(raw, table_parser.column_defs)
 
-    #define the x axis as the iteration (which maps to the data loaded)
-    print df['recordcount'].unique()
-    print df['fieldcount'].unique()
-    print df['fieldlength'].unique()
+    # Calculate how much data is added per 'run'
+    data_per_iteration = df['recordcount'].unique().mean()
+    + df['fieldcount'].unique().mean()
+    + df['fieldlength'].unique().mean()
+    + df['operations'].unique().mean()
 
-    x_axis = list(df['key-start'].unique())
+    # Define the x axes as the incremental data we are adding
+    iterations = len(df['key-start'].unique()) + 1
+    x_axis = list(numpy.arange(data_per_iteration, data_per_iteration * iterations, data_per_iteration))
+    x_axis = [int(i) for i in x_axis]
     x_axis.insert(0, 'x')
 
     #Define the columns we want in the chart and merge them into a single table

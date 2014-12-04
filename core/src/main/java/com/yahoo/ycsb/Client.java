@@ -94,12 +94,6 @@ class StatusThread extends Thread {
 
             DecimalFormat d = new DecimalFormat("#.##");
 
-            if (totalops == 0) {
-                System.err.println(_label + " " + (interval / 1000) + " sec: " + totalops + " operations; " + Measurements.getMeasurements().getSummary());
-            } else {
-                System.err.println(_label + " " + (interval / 1000) + " sec: " + totalops + " operations; " + d.format(curthroughput) + " current ops/sec; " + Measurements.getMeasurements().getSummary());
-            }
-
             if (_standardstatus) {
                 if (totalops == 0) {
                     System.out.println(_label + " " + (interval / 1000) + " sec: " + totalops + " operations; " + Measurements.getMeasurements().getSummary());

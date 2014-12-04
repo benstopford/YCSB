@@ -1,5 +1,9 @@
 #!/bin/sh
 
-[ "$#" -eq 1 ] || die
+
+if [ "$#" -ne 1 ]; then
+    echo "you need 1 arguments for this script"
+    exit 1
+fi
 
 aws ec2 describe-instances --filters "Name=tag-value,Values=$1" | grep IPADDRESS | awk {'print $4'} | uniq

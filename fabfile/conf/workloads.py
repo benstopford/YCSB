@@ -3,18 +3,18 @@ TIME_DURATION = 20*60  #seconds
 
 data = {
     #global YSCB properties
-    'insertstart':0,                        #Increase this if there is already data in the DB
-    'recordcount':  10000,                #not sure this is what it says it is. insert count appears to cover inserted data
-    'operationcount': 10000,              #Total operations (writes or reads)
-    'insertcount': 10000,                 #how many to write during load
+    'insertstart': 0,                        #Increase this if there is already data in the DB
+    'recordcount': 10000,                #used as the number space for defining the keys to be READ
+    'operationcount': 10000,              #Total operations (writes or reads during a workload)
+    'insertcount': 10000,                 #how many to write during load phase
 
     'fieldcount': 10,                      # the value is a list of this many byte arrays
-    'fieldlength': 10,                     # each of the byte arrays is either exactly or approximately this length depending on the policy
+    'fieldlength': 100,                     # each of the byte arrays is either exactly or approximately this length depending on the policy
     'fieldlengthdistribution':'constant',   # can also be zipfian or uniform but zipfian isn't working currently
 
     #'fieldnameprefix': 'f',
     'maxexecutiontime': TIME_DURATION,      # 40min
-    'threadcount': 30,
+    'threadcount': 10,
     'workload': 'com.yahoo.ycsb.workloads.CoreWorkload',
     'exportmeasurementsinterval': 30000,
     #'warmupexecutiontime': 60000,
@@ -33,7 +33,7 @@ data = {
     #'writeallfields': 'false',
     #'maxexecutiontime': 600,
     #'mongodb.writeConcern': 'replicas_safe',#Mongo SYNC only!
-    'reconnectiontime': 1000,
+    'reconnectiontime': 1000
 }
 TIME_DURATION = 20*60 #seconds
 

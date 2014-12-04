@@ -13,15 +13,18 @@ def _ycsbloadcmd(database, clientno, timestamp, target=None):
     for (key, value) in get_properties(database).items():
         if key == 'operationcount':
             cmd += ' -p %s=%s' % (key, value / totalclients)
+        elif key == 'insertcount':
+            insertcount = workloads.data['insertcount'] / totalclients
+            cmd += ' -p insertcount=%s' % insertcount
         else:
             cmd += ' -p %s=%s' % (key, value)
 
-    starting_point = workloads.data['insertstart']
-    insertcount = workloads.data['recordcount'] / totalclients
-    insertstart = starting_point + insertcount * clientno
+    #insert start isn't in workloads.data as there is no reason to configure it
+    if 'insertstart' in workloads.data.keys():
+        starting_point = workloads.data['insertstart']
+        insertstart = starting_point + insertcount * clientno
+        cmd += ' -p insertstart=%s' % insertstart
 
-    cmd += ' -p insertstart=%s' % insertstart
-    cmd += ' -p insertcount=%s' % insertcount
     if target is not None:
         cmd += ' -target %s' % str(target)
     outfile = get_outfilename(database['name'], 'load', 'out', timestamp)

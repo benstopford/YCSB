@@ -1,4 +1,10 @@
 #!/bin/sh
+
+if [ "$#" -ne 2 ]; then
+    echo "you need 2 arguments for this script"
+    exit 1
+fi
+
 ID=$1
 TAG_NAME=$2
 

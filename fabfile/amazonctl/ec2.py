@@ -6,6 +6,7 @@ from fabfile.amazonctl.amazon_ip import *
 from fabfile.conf.machine_config import core_machine_settings
 from fabfile.util.print_utils import emphasis
 import time
+from fabfile.conf.workloads import data
 
 
 def start(tag, node_count):
@@ -40,14 +41,8 @@ def configure_machine_and_reboot(tag, node_count):
 
 
 def start_db_ec2_instance(node_count, tag):
-    # start db
-    command = ["aws", "ec2", "run-instances",
-               "--count=" + str(node_count),
-               "--image-id=" + env.ami[tag],
-               "--instance-type=" + env.instance_type[tag],
-               "--key-name=" + env.key_name,
-               "--security-groups=" + env.security_group
-    ]
+    #use shell script to get around awkward json argument
+    command = [dir + "ec2runinstance", str(node_count),env.ami[tag], env.instance_type[tag], env.key_name, env.security_group, '32']
     print command
     out = subprocess.check_output(command)
 
@@ -118,5 +113,8 @@ def ec2_status():
 
 
 def test():
-    print ''
+    print 'hello'
+    print ('This test will load approximately {:,}MB of data spread over {} runs'.format(data['insertcount']*data['fieldcount']*data['fieldlength']/1000000 * 10, 10))
+
+
 

@@ -3,7 +3,7 @@ from fabfile.amazonctl.amazon_ip import *
 import pytz
 
 env.db_node_count = "2"
-env.ycsb_node_count = "2"
+env.ycsb_node_count = "10"
 
 # env.ycsb_ami = "ami-6e7bd919"
 # env.db_ami = "ami-6e7bd919"
@@ -14,11 +14,22 @@ env.ami = {
     'DB': 'ami-6e7bd919',
     'DB_MAN': 'ami-6e7bd919'
 }
-env.instance_type = {
-    'YCSB': 't2.micro',
-    'DB': 't2.micro',
-    'DB_MAN': 't2.micro'
-}
+
+testing = False
+if testing:
+    env.instance_type = {
+        'YCSB': 't2.micro',
+        'DB': 't2.micro',
+        'DB_MAN': 't2.micro'
+    }
+    env.database_disk_allocation = 8
+else:
+    env.instance_type = {
+        'YCSB': 't2.small',
+        'DB': 'm3.large',
+        'DB_MAN': 'm3.medium'
+    }
+    env.database_disk_allocation = 32
 
 ycsb_ec2_user = 'ec2-user'
 env.user = ycsb_ec2_user

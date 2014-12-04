@@ -5,9 +5,10 @@ import time
 from util.print_utils import emphasis
 from conf.workloads import data
 import helpers
+import os
 
 
-
+summary_log = "growing_data_group_test_summary.log"
 
 def delete_server_logs():
     execute(
@@ -23,7 +24,7 @@ def load(db):
         db,
         hosts=env.roledefs['ycsb_public_ip']
     )
-    print emphasis('Load has been started: [%s / %s]' % (data['insertstart'], data['recordcount']))
+    print log('Load has been started: [%s / %s]' % (data['insertstart'], data['recordcount']))
 
 def run_workload(db, wl):
     helpers.reset_base_time()
@@ -33,7 +34,7 @@ def run_workload(db, wl):
         workload=wl,
         hosts=env.roledefs['ycsb_public_ip']
     )
-    print emphasis('Workload %s has been started' % wl)
+    print log('Workload %s has been started' % wl)
 
 
 def print_tail(db):
@@ -45,13 +46,13 @@ def print_tail(db):
 
 
 def run_status_check(db):
-    print emphasis('STATUS CHECK START')
+    print log('STATUS CHECK START')
     execute(
         print_tail,
         db,
         hosts=env.roledefs['ycsb_public_ip']
     )
-    print emphasis('STATUS CHECK END')
+    print log('STATUS CHECK END')
 
 
 def download_logs(db):
@@ -102,13 +103,22 @@ def await_completion(db):
         print 'Polling (15) YCSB log files for completion status'
         time.sleep(15)
 
+def log(line):
+    print emphasis(line)
+    with open(summary_log, "a") as myfile:
+        myfile.write(line)
+
 def growing_data_group_test(db, iter=10):
+    os.remove(summary_log)
     kill_processes()
     delete_server_logs()
     with settings(warn_only=True):
         local('./archlogs.sh')
 
+    log('This test will load approximately %sMB of data spread over %s runs' % (data['insertcount']*data['fieldcount']*data['fieldlength'] * iter, iter))
+
     while iter > 0:
+        log('starting iteration '+iter)
         load(db)
         await_completion(db)
         run_status_check(db)
@@ -128,10 +138,12 @@ def growing_data_group_test(db, iter=10):
         delete_server_logs()
 
         #move the key range up by the record count
-        data['insertstart'] = data['insertstart'] + data['recordcount']
+        data['insertstart'] = data['insertstart'] + data['insertcount']
+        data['recordcount'] = data['insertstart'] + data['insertcount']
+
 
         iter -= 1
-        print emphasis("Moving to round %s" % str(iter))
+        print log("Moving to round %s" % str(iter))
 
 
 

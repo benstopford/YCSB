@@ -24,8 +24,15 @@ def start_mongod():
     sudo('sudo service mongod start')
     sudo('sudo chmod 777 /var/log/mongodb')
     sudo('sudo chmod 777 /var/log/mongodb/mongod.log')
-    out = run('cat  /var/log/mongodb/mongod.log | grep "waiting for connections on port" | wc -l')
-    if out != "1":
+
+    #Check 5 times as mongo doesn't always start instantly
+    out = ""
+    for i in range(5):
+        out = run('cat  /var/log/mongodb/mongod.log | grep "waiting for connections on port" | wc -l')
+        if out == "1":
+            continue
+
+    if out !="1":
         run('tail  /var/log/mongodb/mongod.log')
         raise Exception('Mongo failed to start')
 

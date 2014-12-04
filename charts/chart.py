@@ -28,10 +28,10 @@ def throughput(dir):
     df = panda_parser.convert_to_panda(raw, table_parser.column_defs)
 
     # Calculate how much data is added per 'run'
-    data_per_iteration = df['recordcount'].unique().mean()
-    + df['fieldcount'].unique().mean()
-    + df['fieldlength'].unique().mean()
-    + df['operations'].unique().mean()
+    inserts_per_iter = long(df[df['insertcount'] > 0]['insertcount'].unique().mean())
+    field_count = long(df['fieldcount'].unique().mean())
+    field_len = long(df['fieldlength'].unique().mean())
+    data_per_iteration = inserts_per_iter * field_count * field_len / 1000 #keep numbers round by approximating KB to 10^3
 
     # Define the x axes as the incremental data we are adding
     iterations = len(df['key-start'].unique()) + 1
@@ -39,7 +39,7 @@ def throughput(dir):
     x_axis = [int(i) for i in x_axis]
     x_axis.insert(0, 'x')
 
-    #Define the columns we want in the chart and merge them into a single table
+    # Define the columns we want in the chart and merge them into a single table
     #(merging on the key which is key-start)
     merged = pd.concat([
                            agg_throughput(df, Workloads.LOAD),
@@ -73,7 +73,7 @@ def insert_data_into_chart(data):
                 if '#data#' in line:
                     line = line.replace('#data#', data)
                 if '#xlegend#' in line:
-                    line = line.replace('#xlegend#', 'Data Size (B)')
+                    line = line.replace('#xlegend#', 'Data Size (KB)')
                 if '#ylegend#' in line:
                     line = line.replace('#ylegend#', 'Operations/Sec')
 

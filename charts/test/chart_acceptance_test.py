@@ -10,7 +10,7 @@ class TestProcessor(unittest.TestCase):
     def test_multiple_hosts_multiple_runs(self):
         expected = "x:'x', " \
                    "columns:[" \
-                   "['x', 10000, 20000]" \
+                   "['x', 500, 1000]" \
                    ",['load-throughput', 1748.5974, 1716.7574]" \
                    ",['wla-throughput', 2091.4185, 2124.3818]" \
                    "]"
@@ -22,7 +22,7 @@ class TestProcessor(unittest.TestCase):
     def test_should_handle_missing_files_without_skewing_data(self):
         expected = "x:'x', " \
                    "columns:[" \
-                   "['x', 10000, 20000]" \
+                   "['x', 500, 1000]" \
                    ",['load-throughput', 1798.9889, 0]" \
                    ",['wla-throughput', 2049.0405, 2233.0913]" \
                    "]"

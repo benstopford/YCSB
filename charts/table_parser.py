@@ -24,6 +24,7 @@ column_defs = {'node': {'index': increment(), 'Name': 'Node Id', 'dtype': 'objec
            'recordcount': {'index': increment(), 'Name': 'RecordCount', 'dtype': 'int32'},
            'fieldcount': {'index': increment(), 'Name': 'FieldCount', 'dtype': 'int32'},
            'fieldlength': {'index': increment(), 'Name': 'FieldLength(B)', 'dtype': 'int32'},
+           'insertcount': {'index': increment(), 'Name': 'InsertCount', 'dtype': 'int32'},
            'operations': {'index': increment(), 'Name': 'Operations', 'dtype': 'float32'}
 }
 
@@ -67,6 +68,10 @@ def data_table(dir):
 
                     p = re.compile("fieldlength=[0-9]*")
                     result[column_defs['fieldlength']['index']] = p.finditer(line).next().group().split('=')[1]
+
+                    if 'insertcount' in line:
+                        p = re.compile("insertcount=[0-9]*")
+                        result[column_defs['insertcount']['index']] = p.finditer(line).next().group().split('=')[1]
 
                 if line.startswith('[OVERALL]') and 'Throughput' in line:
                     result[column_defs['throughput']['index']] = line.split(", ")[-1][:-1]

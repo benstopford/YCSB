@@ -1,0 +1,9 @@
+#!/bin/sh
+
+if [ "$#" -ne 6 ]; then
+    echo "you need 6 arguments for this script"
+    exit 1
+fi
+
+aws ec2 run-instances --count=$1 --image-id=$2 --instance-type=$3 --key-name=$4  --security-groups=$5 --block-device-mappings="[{\"DeviceName\":\"/dev/xvda\",\"Ebs\":{\"DeleteOnTermination\":true,\"VolumeSize\":$6,\"VolumeType\":\"gp2\"}}]"
+

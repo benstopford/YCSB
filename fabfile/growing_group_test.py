@@ -6,9 +6,11 @@ from util.print_utils import emphasis
 from conf.workloads import data
 import helpers
 import os
+import time
 
 
 summary_log = "growing_data_group_test_summary.log"
+
 
 def delete_server_logs():
     execute(
@@ -24,7 +26,8 @@ def load(db):
         db,
         hosts=env.roledefs['ycsb_public_ip']
     )
-    print log('Load has been started: [%s / %s]' % (data['insertstart'], data['recordcount']))
+    print log('Load has been started: [%s / %s]' % (data['insertstart'], data['insertcount']))
+
 
 def run_workload(db, wl):
     helpers.reset_base_time()
@@ -46,13 +49,13 @@ def print_tail(db):
 
 
 def run_status_check(db):
-    print log('STATUS CHECK START')
+    print emphasis('STATUS CHECK START')
     execute(
         print_tail,
         db,
         hosts=env.roledefs['ycsb_public_ip']
     )
-    print log('STATUS CHECK END')
+    print emphasis('STATUS CHECK END')
 
 
 def download_logs(db):
@@ -79,15 +82,17 @@ def ycsb_run_status(db):
             overall_marker = run('cat %s | grep "\[OVERALL\]" | wc -l' % latest_out_log)
             run('tail -n-4 %s' % latest_out_log)
             if int(overall_marker) > 0:
-                #check for errors
+                # check for errors
                 latest_err_log = run("ls -ltr | grep .err | awk 'END{print}' | awk {'print $9'};")
                 lines_in_error_log = run('cat %s | wc -l' % latest_err_log)
                 if int(lines_in_error_log) > 8:
                     ycsb.get_log(db)
-                    raise Exception('Looks like there is something in the error log: %s : %s lines' % (latest_err_log, int(lines_in_error_log)) )
+                    raise Exception('Looks like there is something in the error log: %s : %s lines' % (
+                        latest_err_log, int(lines_in_error_log)))
                 print 'YCSB has completed on %s' % env.host
                 return 1
     return 0
+
 
 def job_complete(db):
     result = execute(
@@ -98,27 +103,44 @@ def job_complete(db):
     success = sum(result.values()) == len(env.roledefs['ycsb_public_ip'])
     return success
 
+
 def await_completion(db):
     while not job_complete(db):
         print 'Polling (15) YCSB log files for completion status'
         time.sleep(15)
 
+
 def log(line):
     print emphasis(line)
     with open(summary_log, "a") as myfile:
-        myfile.write(line)
+        myfile.write('%s\n' % line)
 
-def growing_data_group_test(db, iter=10):
-    os.remove(summary_log)
-    kill_processes()
-    delete_server_logs()
+
+def archive_logs():
     with settings(warn_only=True):
         local('./archlogs.sh')
 
-    log('This test will load approximately %sMB of data spread over %s runs' % (data['insertcount']*data['fieldcount']*data['fieldlength'] * iter, iter))
+
+def initialise(iter):
+    data['insertstart'] = 0
+    if os.path.exists(summary_log):
+        os.remove(summary_log)
+
+    log('This test will load approximately %sMB of data spread over %s runs' % (
+        data['insertcount'] * data['fieldcount'] * data['fieldlength'] * int(iter)/1000000, iter))
+
+
+
+def growing_data_group_test(db, iterations=10):
+    iter = int(iterations)
+    initialise(iter)
+    kill_processes()
+    delete_server_logs()
+    archive_logs()
 
     while iter > 0:
-        log('starting iteration '+iter)
+        log('starting iteration %s.' % iter)
+        start = time.time()
         load(db)
         await_completion(db)
         run_status_check(db)
@@ -131,19 +153,20 @@ def growing_data_group_test(db, iter=10):
         download_logs(db)
         delete_server_logs()
 
-        run_workload(db, 'B')
-        await_completion(db)
-        run_status_check(db)
-        download_logs(db)
-        delete_server_logs()
+        # run_workload(db, 'B')
+        # await_completion(db)
+        # run_status_check(db)
+        # download_logs(db)
+        # delete_server_logs()
 
-        #move the key range up by the record count
+        # move the key range up by the record count
         data['insertstart'] = data['insertstart'] + data['insertcount']
         data['recordcount'] = data['insertstart'] + data['insertcount']
 
-
         iter -= 1
-        print log("Moving to round %s" % str(iter))
+        print log("Round %s took %smins" % (iter, (time.time() - start) / 60))
+
+    log("all done")
 
 
 

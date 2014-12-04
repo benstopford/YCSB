@@ -27,11 +27,14 @@ def throughput(dir):
     # Convert to panda
     df = panda_parser.convert_to_panda(raw, table_parser.column_defs)
 
+    if df.empty:
+        raise Exception('No data found')
+
     # Calculate how much data is added per 'run'
-    inserts_per_iter = long(df[df['insertcount'] > 0]['insertcount'].unique().mean())
+    inserts_per_iter = long(df[(df['workload'] == 'load') & (df['insertcount'] > 0)]['insertcount'].unique().mean())
     field_count = long(df['fieldcount'].unique().mean())
     field_len = long(df['fieldlength'].unique().mean())
-    data_per_iteration = inserts_per_iter * field_count * field_len / 1000 #keep numbers round by approximating KB to 10^3
+    data_per_iteration = inserts_per_iter * field_count * field_len / 1000  # keep numbers round by approximating KB to 10^3
 
     # Define the x axes as the incremental data we are adding
     iterations = len(df['key-start'].unique()) + 1
@@ -40,7 +43,7 @@ def throughput(dir):
     x_axis.insert(0, 'x')
 
     # Define the columns we want in the chart and merge them into a single table
-    #(merging on the key which is key-start)
+    # (merging on the key which is key-start)
     merged = pd.concat([
                            agg_throughput(df, Workloads.LOAD),
                            agg_throughput(df, Workloads.A)
@@ -78,6 +81,6 @@ def insert_data_into_chart(data):
                     line = line.replace('#ylegend#', 'Operations/Sec')
 
                 fout.write(line)
-                print line
+                # print line
 
 

@@ -34,7 +34,7 @@ public class TextMeasurementsExporter implements MeasurementsExporter {
     }
 
     public void write(String metric, String measurement, double d) throws IOException {
-        ps.println("[" + metric + "], " + measurement + ", " + d);
+        ps.println("[" + metric + "], " + measurement + ", " + String.format("%f", d));
     }
 
     @Override

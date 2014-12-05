@@ -6,7 +6,8 @@ from fabfile.amazonctl.amazon_ip import *
 from fabfile.conf.machine_config import core_machine_settings
 from fabfile.util.print_utils import emphasis
 import time
-from fabfile.conf.workloads import data
+from fabfile.conf.hosts import db_node_count, ycsb_node_count, ami, instance_type, key_name, security_group, \
+    use_instance_store, ebs_disk_allocation
 
 
 def start(tag, node_count):
@@ -41,8 +42,25 @@ def configure_machine_and_reboot(tag, node_count):
 
 
 def start_db_ec2_instance(node_count, tag):
-    #use shell script to get around awkward json argument
-    command = [dir + "ec2runinstance", str(node_count),env.ami[tag], env.instance_type[tag], env.key_name, env.security_group, '32']
+    if use_instance_store:
+        print 'Starting server with instance store'
+        command = ["aws", "ec2", "run-instances",
+                   "--count=" + str(node_count),
+                   "--image-id=" + ami[tag],
+                   "--instance-type=" + instance_type[tag],
+                   "--key-name=" + key_name,
+                   "--security-groups=" + security_group
+        ]
+    else:
+        print 'starting server using ebs'
+        disk = '8'
+        if tag is 'YCSB':
+            disk = str(ebs_disk_allocation)
+
+        # use shell script to get around awkward json argument
+        command = [dir + "ec2runinstance", str(node_count), ami[tag], instance_type[tag], key_name, security_group,
+                   disk]
+
     print command
     out = subprocess.check_output(command)
 
@@ -57,11 +75,11 @@ def start_db_ec2_instance(node_count, tag):
 def ec2_up(db):
     include_management_node = get_db(db)['has_management_node']
 
-    dbs = [('DB', int(env.db_node_count)),
-           ('YCSB', int(env.ycsb_node_count))]
+    dbs = [('DB', int(db_node_count)),
+           ('YCSB', int(ycsb_node_count))]
 
     if include_management_node:
-        dbs += [('DB_MAN',1)]
+        dbs += [('DB_MAN', 1)]
 
     print emphasis('booting nodes for tags %s' % ", ".join([x[0] for x in dbs]))
 
@@ -69,11 +87,11 @@ def ec2_up(db):
     for tag in dbs:
         start(tag[0], tag[1])
 
-    #Configure
+    # Configure
     for tag in dbs:
         configure_machine_and_reboot(tag[0], tag[1])
 
-    #Check started
+    # Check started
     print emphasis("waiting for hosts to start after reboot - ctr-c if you don't want to wait")
     for tag in dbs:
         wait_for_tagged_hosts_to_start(tag[0], tag[1])
@@ -114,7 +132,6 @@ def ec2_status():
 
 def test():
     print 'hello'
-    print ('This test will load approximately {:,}MB of data spread over {} runs'.format(data['insertcount']*data['fieldcount']*data['fieldlength']/1000000 * 10, 10))
 
 
 

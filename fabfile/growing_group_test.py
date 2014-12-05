@@ -131,9 +131,13 @@ def initialise(iter):
 
 
 
-def growing_data_group_test(db, iterations=10):
+def growing_data_group_test(db, iterations=10, mode='run'):
     iter = int(iterations)
     initialise(iter)
+
+    if mode != 'run':
+        return
+
     kill_processes()
     delete_server_logs()
     archive_logs()
@@ -167,9 +171,6 @@ def growing_data_group_test(db, iterations=10):
         print log("Round %s took %smins" % (iter, (time.time() - start) / 60))
 
     log("all done")
-
-
-
 
 
 

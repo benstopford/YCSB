@@ -3,7 +3,6 @@ import fabfile.conf.hosts
 from fabric.api import *
 from fabfile.amazonctl.amazon_helper import *
 from fabfile.helpers import get_db
-from fabfile.conf.hosts import refresh_roledefs
 from fabfile.amazonctl.amazon_ip import *
 from fabfile.conf.machine_config import core_machine_settings
 from fabfile.util.print_utils import emphasis

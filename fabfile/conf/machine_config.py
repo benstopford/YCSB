@@ -1,4 +1,5 @@
-from fabric.api import sudo, settings, parallel
+from fabric.api import run, sudo, settings, parallel
+import hosts
 
 @parallel
 def core_machine_settings():
@@ -10,4 +11,6 @@ def core_machine_settings():
         sudo("chmod 644 /etc/security/limits.conf")
 
         # install copperegg monitoring
+        if hosts.enable_copperegg_monitoring:
+            run("curl -sk http://Og55q3qaSHjhVlto@api.copperegg.com/rc.sh | sudo sh")
 

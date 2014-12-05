@@ -10,9 +10,9 @@ databases = {
 
     'cassandra': {
         'name': 'cassandra',
-        'home': '/home/%s' % hosts.env.user,
+        'home': '/home/%s' % hosts.ycsb_ec2_user,
         'command': 'cassandra-cql',
-        'has_management_node': 'False',
+        'has_management_node': False,
         'properties': {
             'hosts': ','.join(env.roledefs['db_public_ip']),
             'cassandra.readconsistencylevel': 'ONE',
@@ -27,9 +27,9 @@ databases = {
 
     'mongodb': {
         'name': 'mongodb',
-        'home': '/home/%s' % hosts.env.user,
+        'home': '/home/%s' % hosts.ycsb_ec2_user,
         'command': 'mongodb',
-        'has_management_node': 'True',
+        'has_management_node': True,
         'properties': {
             'mongodb.url': ",".join([w + ":27028" for w in env.roledefs['db_private_ip']]),
             'mongodb.database': 'ycsb',
@@ -45,7 +45,7 @@ databases = {
 
     'basic': {  # fake database
                 'name': 'basic',
-                'has_management_node': 'True',
+                'has_management_node': False,
                 'command': 'basic',
                 'properties': {
                     'basicdb.verbose': 'false',

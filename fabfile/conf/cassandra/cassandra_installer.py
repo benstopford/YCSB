@@ -1,6 +1,8 @@
 from fabric.api import *
 from shutil import *
 import os
+from fabfile.conf.hosts import use_instance_store, instance_store_root_dir
+
 
 def install_cassandra():
     sudo("rm -f /etc/yum.repos.d/datastax.repo")
@@ -16,6 +18,7 @@ def install_cassandra():
     sudo('yum -y install dsc21')
     sudo('chmod 777 /var/lib/cassandra')
 
+
 def install_java():
     java_version = run("java -version")
     if "Java(TM) SE Runtime Environment (build 1.7.0_25-b15)" not in java_version:
@@ -30,10 +33,24 @@ def install_java():
     else:
         print 'Java is correct, proceeding\n'
 
+
+def prepare_directories():
+    _commit_log_dir = (instance_store_root_dir + '/commitlog')
+    _data_dir = (instance_store_root_dir + '/data')
+    if (use_instance_store):
+        sudo('mkdir -p %s' % _commit_log_dir)
+        sudo('chmod 777 %s' % _commit_log_dir)
+        sudo('mkdir -p %s' % _data_dir)
+        sudo('chmod 777 %s' % _data_dir)
+    return _commit_log_dir, _data_dir
+
+
 def make_substitutions(base, yaml):
     seed = env.roledefs['db_private_ip'][0]
     index = env.roledefs['db_public_ip'].index(env.host_string)
     host_internal_ip = env.roledefs['db_private_ip'][index]
+
+    _commit_log_dir, _data_dir = prepare_directories()
 
     with open(yaml, "wt") as fout:
         with open(base, "rt") as fin:
@@ -41,6 +58,14 @@ def make_substitutions(base, yaml):
                 line = line.replace('seeds: "127.0.0.1"', 'seeds: "%s"' % seed)
                 line = line.replace('listen_address: localhost', 'listen_address: %s' % host_internal_ip)
                 line = line.replace('# broadcast_rpc_address: 1.2.3.4', 'broadcast_rpc_address: %s' % host_internal_ip)
+                if use_instance_store:
+
+                    line = line.replace('commitlog_directory: /var/lib/cassandra/commitlog',
+                                        'commitlog_directory: %s' % _commit_log_dir)
+
+                    line = line.replace(' - /var/lib/cassandra/data',
+                                        ' - /%s' % _data_dir)
+
                 fout.write(line)
         fout.write("\nauto_bootstrap: false")
 
@@ -77,9 +102,9 @@ def _configure():
 def install():
     print 'Installing Cassandra on hosts: %s' % env.roledefs['db_public_ip']
 
-    execute( #install in parallel
-        _install,
-        hosts=env.roledefs['db_public_ip']
+    execute(  # install in parallel
+              _install,
+              hosts=env.roledefs['db_public_ip']
     )
     execute(
         _configure,

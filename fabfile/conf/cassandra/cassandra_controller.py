@@ -14,6 +14,8 @@ def wait_to_cluster():
             break
         count += 1; time.sleep(1); print 'waiting for Casandra to cluster'
         if count == 20:
+            out = run('nodetool status')
+            print out
             raise Exception("Cassandra did not cluster! ...")
 
 @parallel

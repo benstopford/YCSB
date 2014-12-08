@@ -303,7 +303,6 @@ public class CassandraCQLClient extends DB {
 
             ResultSet rs = session.execute(bs);
             Row row = rs.one();
-//            System.out.printf("Key:%s -> val:%s\n", key, row);
 
             assert row != null : "Key " + key + " was not found; did you run a load job with the correct parameters?";
             for (ColumnDefinitions.Definition def : row.getColumnDefinitions()) {
@@ -313,8 +312,8 @@ public class CassandraCQLClient extends DB {
 
             return OK;
         } catch (Exception e) {
+            System.err.println("Error reading key: " + key);
             e.printStackTrace();
-            System.out.println("Error reading key: " + key);
             return ERR;
         }
     }

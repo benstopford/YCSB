@@ -2,7 +2,7 @@ from tempfile import mkstemp
 from shutil import move
 from os import remove, close
 
-def replace(file_path, pattern, subst):
+def replace_in_file(file_path, pattern, subst):
     #Create temp file
     fh, abs_path = mkstemp()
     new_file = open(abs_path,'w')
@@ -17,3 +17,12 @@ def replace(file_path, pattern, subst):
     remove(file_path)
     #Move new file
     move(abs_path, file_path)
+
+def append_line_to_file(path, line):
+
+    if line in open(path).read():
+        return
+
+    with open(path, "a") as myfile:
+        myfile.write("\n")
+        myfile.write(line)

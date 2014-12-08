@@ -2,32 +2,33 @@ from fabric.api import *
 import time
 from fabfile.util.print_utils import emphasis
 from shutil import *
-from fabfile.util.file_utils import replace
+from fabfile.util.file_utils import replace_in_file, append_line_to_file
 import tempfile
 import os
 from fabfile.conf.hosts import use_instance_store, instance_store_root_dir
 
 instance_store_mondod_db_path = instance_store_root_dir+'/data'
 
-
+#leave synchronous else fabric reuses the same temp file
 def change_mongod_conf():
     print 'overriding bind_ip'
-    paths = get(remote_path='/etc/mongod.conf', local_path=tempfile.gettempdir())
-    for path in paths:
+    conf = get(remote_path='/etc/mongod.conf', local_path=tempfile.gettempdir())
+    for f in conf:
         # comment out bind_ip default (to allow remote access)
-        replace(path, 'bind_ip=127.0.0.1', '#bind_ip=127.0.0.1')
+        replace_in_file(f, 'bind_ip=127.0.0.1', '#bind_ip=127.0.0.1')
         if use_instance_store:
             dbpath = instance_store_mondod_db_path+'/mongod'
             sudo('mkdir -p '+dbpath)
             sudo('chmod 777 '+dbpath)
-            #change the database path to the correct directory
-            replace(path, 'dbpath=/var/lib/mongo', 'dbpath=' + dbpath)
-        put(local_path=path, remote_path='/etc/mongod.conf', use_sudo=True)
-        os.remove(path)
+            #change the database file to the correct directory
+            replace_in_file(f, 'dbpath=/var/lib/mongo', 'dbpath=' + dbpath)
+        append_line_to_file(f, 'quiet=true')
+        append_line_to_file(f, 'journal=true')
+        put(local_path=f, remote_path='/etc/mongod.conf', use_sudo=True)
+        os.remove(f)
 
-
+@parallel
 def start_mongod():
-    change_mongod_conf()
 
     with settings(warn_only=True):
         sudo('rm /var/log/mongodb/mongod.log')
@@ -125,16 +126,23 @@ def configure_sharding():
 def stop_mongos():
     sudo("killall -q mongos", warn_only=True)
 
+def clear_directory(dir):
+    sudo('rm -rf '+dir)
+    sudo('mkdir -p '+dir)
+    sudo('chmod 777 '+dir)
 
 @parallel
 def stop_mongod():
     sudo('sudo service mongod stop')
-    sudo('rm -rf '+instance_store_mondod_db_path)
+    clear_directory(instance_store_mondod_db_path)
+    clear_directory('/var/lib/mongo')
 
 
 def stop_config_server():
     sudo('killall -q mongod', warn_only=True)
-    sudo('rm -rf '+instance_store_mondod_db_path)
+    clear_directory(instance_store_mondod_db_path)
+    clear_directory('/data/configdb')
+
 
 
 def start():
@@ -148,6 +156,12 @@ def start():
 
     print 'Installing & Starting Mongod/Mongos on hosts: %s' % mongo_nodes
     print 'Installing & Starting Config Server on hosts: %s' % config_server
+
+    print emphasis('changing configuration')
+    execute(
+        change_mongod_conf,
+        hosts=mongo_nodes
+    )
 
     print emphasis('starting config server')
     execute(

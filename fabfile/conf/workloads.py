@@ -1,11 +1,11 @@
 root = '/opt/ycsb'  #root of YCSB installation
-TIME_DURATION = 20*60  #seconds
+# TIME_DURATION = 20*60  #seconds
 
 data = {
     #global YSCB properties
-    'operationcount': 10000000,             #Total operations (writes or reads during a workload)
-    'insertcount': 10000000,                #How many objects to write during load phase
-    'recordcount': 10000000,                #Specifies the keyspaace for reads, so if you're not loading ycsb knows what keyspace is available.
+    'operationcount':  10000,             #Total operations (writes or reads during a workload)
+    'insertcount':    100000,                #How many objects to write during load phase
+    'recordcount':    100000,                #Specifies the keyspaace for reads, so if you're not loading ycsb knows what keyspace is available.
 
     'fieldcount': 10,                      # the value is a list of this many byte arrays
     'fieldlength': 10,                     # each of the byte arrays is either exactly or approximately this length depending on the policy
@@ -13,21 +13,21 @@ data = {
 
 
     #'fieldnameprefix': 'f',
-    'maxexecutiontime': TIME_DURATION,      # 40min
-    'threadcount': 100,
+    # 'maxexecutiontime': TIME_DURATION,      # 40min
+    'threadcount': 20,
     'workload': 'com.yahoo.ycsb.workloads.CoreWorkload',
     'exportmeasurementsinterval': 30000,
     #'warmupexecutiontime': 60000,
 
     'insertretrycount': 10,
 
-    'ignoreinserterrors': 'false',
+    'ignoreinserterrors': 'true',
     'readretrycount': 1000,
     'updateretrycount': 1000,
     'measurementtype': 'timeseries',
     'timeseries.granularity': 100, # Interval for reporting in ms
     #'reconnectiontime': 5000, # 5 sec limit before reconnection
-    'reconnectionthroughput': 10, #limit for reconnection.
+    # 'reconnectionthroughput': 10, #limit for reconnection.
     #'retrydelay': 1,
     #'readallfields': 'false',
     #'writeallfields': 'false',

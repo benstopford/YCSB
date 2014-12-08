@@ -5,6 +5,7 @@ from fabfile.helpers import get_db
 from fabfile.amazonctl.amazon_ip import *
 from fabfile.conf.machine_config import core_machine_settings
 from fabfile.util.print_utils import emphasis
+from fabfile.growing_group_test import ycsb_run_status
 import time
 from fabfile.conf.hosts import db_node_count, ycsb_node_count, ami, instance_type, key_name, security_group, \
     use_instance_store, ebs_disk_allocation
@@ -54,7 +55,7 @@ def start_db_ec2_instance(node_count, tag):
     else:
         print 'starting server using ebs'
         disk = '8'
-        if tag is 'YCSB':
+        if tag is not 'YCSB':
             disk = str(ebs_disk_allocation)
 
         # use shell script to get around awkward json argument
@@ -130,8 +131,9 @@ def ec2_status():
     print out
 
 
+@roles('ycsb_public_ip')
 def test():
-    print 'hello'
+    ycsb_run_status('mongodb')
 
 
 

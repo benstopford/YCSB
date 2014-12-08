@@ -20,7 +20,7 @@ def wait_to_cluster():
 
 @parallel
 def start_cassandra():
-    sudo("service cassandra stop")
+    _stop()
     sudo("rm -rf /var/lib/cassandra/*")
     sudo('service cassandra start')
 

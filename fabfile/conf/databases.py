@@ -11,6 +11,7 @@ databases = {
     'cassandra': {
         'name': 'cassandra',
         'home': '/home/%s' % hosts.ycsb_ec2_user,
+        'logs':'',
         'command': 'cassandra-cql',
         'has_management_node': False,
         'properties': {
@@ -22,7 +23,8 @@ databases = {
             'install': cassandra.cassandra_installer.install,
             'run': cassandra.cassandra_controller.start,
             'stop': cassandra.cassandra_controller.stop
-        }
+        },
+        'permissablerunerrors': ['log4j:WARN']
     },
 
     'mongodb': {

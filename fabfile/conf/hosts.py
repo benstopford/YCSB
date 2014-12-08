@@ -2,13 +2,14 @@ from fabric.api import env as fabric_env
 from fabfile.amazonctl.amazon_ip import *
 import pytz
 
-_amz_linux_ebs_backed = 'ami-6e7bd919'
-_amz_linux_instance_store = 'ami-0318e374'
+_amz_linux_ebs_backed_para = 'ami-6e7bd919'
+_amz_linux_instance_store_para = 'ami-0318e374'
+_amz_linux_instance_store_hvm = 'ami-0f21df78'
 
 #*********** General Settings ***************
 
-db_node_count = "1"
-ycsb_node_count = "1"
+db_node_count = "2"
+ycsb_node_count = "2"
 
 testing = True
 use_instance_store = True
@@ -28,23 +29,23 @@ instance_type = {
 }
 ebs_disk_allocation = 8
 ami = {
-    'YCSB': _amz_linux_ebs_backed,
-    'DB': _amz_linux_ebs_backed,
-    'DB_MAN': _amz_linux_ebs_backed
+    'YCSB': _amz_linux_ebs_backed_para,
+    'DB': _amz_linux_ebs_backed_para,
+    'DB_MAN': _amz_linux_ebs_backed_para
 }
 
 instance_store_root_dir = '/media/ephemeral0'
-if(use_instance_store):
+if use_instance_store and testing:
     #cheapest servers with instance storage
     instance_type = {
-        'YCSB': 'm3.medium',
+        'YCSB': 't2.small',
         'DB': 'm3.medium',
         'DB_MAN': 'm3.medium'
     }
     ami = {
-        'YCSB': _amz_linux_instance_store,
-        'DB': _amz_linux_instance_store,
-        'DB_MAN': _amz_linux_instance_store
+        'YCSB': _amz_linux_ebs_backed_para,
+        'DB': _amz_linux_instance_store_para,
+        'DB_MAN': _amz_linux_instance_store_para
     }
 
 #For real work use larger instances and switch to instance storage
@@ -56,12 +57,11 @@ if not testing:
         'DB_MAN': 'm3.medium'
     }
     ami = {
-        'YCSB': _amz_linux_instance_store,
-        'DB': _amz_linux_instance_store,
-        'DB_MAN': _amz_linux_instance_store
+        'YCSB': _amz_linux_ebs_backed_para,
+        'DB': _amz_linux_ebs_backed_para,
+        'DB_MAN': _amz_linux_ebs_backed_para
     }
-    use_instance_store = True # if false specify ebs_disk_allocation
-    ebs_disk_allocation = 32
+    ebs_disk_allocation = 1000 #ycsb nodes always get 8
 
 ycsb_ec2_user = 'ec2-user'
 key_name = 'datalabs-dsc1'

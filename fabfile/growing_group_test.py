@@ -74,7 +74,7 @@ def kill_processes():
 
 
 def ycsb_run_status(db):
-    """ Shows just whether the jobs are complete"""
+    """ Shows whether the job is:q complete"""
     database = get_db(db)
     with cd(database['home']):
         latest_out_log = run("ls -ltr | grep *.out | awk 'END{print}' | awk {'print $9'};")
@@ -84,7 +84,14 @@ def ycsb_run_status(db):
             if int(overall_marker) > 0:
                 # check for errors
                 latest_err_log = run("ls -ltr | grep .err | awk 'END{print}' | awk {'print $9'};")
-                lines_in_error_log = run('cat %s | wc -l' % latest_err_log)
+
+                permissible_errors = ''
+                if 'permissablerunerrors' in get_db(db):
+                    permissible_errors = " ".join(['| grep -v ' + s for s in get_db(db)['permissablerunerrors']])
+                    print permissible_errors
+
+
+                lines_in_error_log = run('cat %s %s | wc -l' % (latest_err_log, permissible_errors))
                 if int(lines_in_error_log) > 8:
                     ycsb.get_log(db)
                     raise Exception('Looks like there is something in the error log: %s : %s lines' % (
@@ -142,14 +149,20 @@ def growing_data_group_test(db, iterations=10, mode='run'):
     delete_server_logs()
     archive_logs()
 
+
     while iter > 0:
         log('starting iteration %s.' % iter)
         start = time.time()
+
         load(db)
         await_completion(db)
         run_status_check(db)
         download_logs(db)
         delete_server_logs()
+
+        # move the key range up by the record count
+        data['insertstart'] = data['insertstart'] + data['insertcount']
+        data['recordcount'] = data['insertstart']
 
         run_workload(db, 'A')
         await_completion(db)
@@ -163,9 +176,6 @@ def growing_data_group_test(db, iterations=10, mode='run'):
         # download_logs(db)
         # delete_server_logs()
 
-        # move the key range up by the record count
-        data['insertstart'] = data['insertstart'] + data['insertcount']
-        data['recordcount'] = data['insertstart'] + data['insertcount']
 
         iter -= 1
         print log("Round %s took %smins" % (iter, (time.time() - start) / 60))

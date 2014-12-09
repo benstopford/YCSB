@@ -17,7 +17,8 @@
 package com.yahoo.ycsb;
 
 import java.util.Iterator;
-import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicLong;
+
 /**
  * YCSB-specific buffer class.  ByteIterators are designed to support
  * efficient field generation, and to allow backend drivers that can stream
@@ -43,8 +44,10 @@ import java.util.ArrayList;
  * @author sears
  */
 public abstract class ByteIterator implements Iterator<Byte> {
+    protected static AtomicLong consumedBytes = new AtomicLong();
 
-	@Override
+
+    @Override
 	public abstract boolean hasNext();
 
 	@Override

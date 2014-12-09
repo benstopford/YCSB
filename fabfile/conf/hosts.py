@@ -9,10 +9,10 @@ _amz_linux_instance_store_hvm = 'ami-0f21df78'
 #*********** General Settings ***************
 
 db_node_count = "2"
-ycsb_node_count = "2"
+ycsb_node_count = "10"
 
-testing = True
-use_instance_store = True
+testing = False
+use_instance_store = False
 
 enable_copperegg_monitoring = True
 

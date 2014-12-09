@@ -16,8 +16,6 @@
  */
 package com.yahoo.ycsb;
 
-import java.util.concurrent.atomic.AtomicLong;
-
 /**
  * A ByteIterator that generates a random sequence of bytes.
  */
@@ -26,7 +24,6 @@ public class RandomByteIterator extends ByteIterator {
     private long off;
     private int bufOff;
     private byte[] buf;
-    private static AtomicLong consumedBytes = new AtomicLong();
 
     @Override
     public boolean hasNext() {

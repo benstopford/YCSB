@@ -533,8 +533,23 @@ public class Client {
         }
     }
 
+    public interface ExitHandler{
+        void exit();
+    }
+    private static class DefaultExitHandler implements ExitHandler{
+
+        @Override
+        public void exit() {
+            System.exit(0);
+        }
+    }
+
     @SuppressWarnings("unchecked")
     public static void main(String[] args) throws FileNotFoundException {
+        run(args, new DefaultExitHandler());
+    }
+
+    static void run(String[] args, ExitHandler exitHandler) throws FileNotFoundException {
         String dbname;
         Properties props = new Properties();
         Properties fileprops = new Properties();
@@ -550,7 +565,7 @@ public class Client {
 
         if (args.length == 0) {
             usageMessage();
-            System.exit(0);
+            exitHandler.exit();
         }
 
         while (args[argindex].startsWith("-")) {
@@ -558,7 +573,7 @@ public class Client {
                 argindex++;
                 if (argindex >= args.length) {
                     usageMessage();
-                    System.exit(0);
+                    exitHandler.exit();
                 }
                 int tcount = Integer.parseInt(args[argindex]);
                 props.setProperty("threadcount", tcount + "");
@@ -567,7 +582,7 @@ public class Client {
                 argindex++;
                 if (argindex >= args.length) {
                     usageMessage();
-                    System.exit(0);
+                    exitHandler.exit();
                 }
                 int ttarget = Integer.parseInt(args[argindex]);
                 props.setProperty("target", ttarget + "");
@@ -588,7 +603,7 @@ public class Client {
                 argindex++;
                 if (argindex >= args.length) {
                     usageMessage();
-                    System.exit(0);
+                    exitHandler.exit();
                 }
                 props.setProperty("db", args[argindex]);
                 argindex++;
@@ -596,7 +611,7 @@ public class Client {
                 argindex++;
                 if (argindex >= args.length) {
                     usageMessage();
-                    System.exit(0);
+                    exitHandler.exit();
                 }
                 label = args[argindex];
                 argindex++;
@@ -604,7 +619,7 @@ public class Client {
                 argindex++;
                 if (argindex >= args.length) {
                     usageMessage();
-                    System.exit(0);
+                    exitHandler.exit();
                 }
                 String propfile = args[argindex];
                 argindex++;
@@ -614,7 +629,7 @@ public class Client {
                     myfileprops.load(new FileInputStream(propfile));
                 } catch (IOException e) {
                     e.printStackTrace();
-                    System.exit(0);
+                    exitHandler.exit();
                 }
 
                 //Issue #5 - remove call to stringPropertyNames to make compilable under Java 1.5
@@ -628,12 +643,12 @@ public class Client {
                 argindex++;
                 if (argindex >= args.length) {
                     usageMessage();
-                    System.exit(0);
+                    exitHandler.exit();
                 }
                 int eq = args[argindex].indexOf('=');
                 if (eq < 0) {
                     usageMessage();
-                    System.exit(0);
+                    exitHandler.exit();
                 }
 
                 String name = args[argindex].substring(0, eq);
@@ -644,7 +659,7 @@ public class Client {
             } else {
                 System.out.println("Unknown option " + args[argindex]);
                 usageMessage();
-                System.exit(0);
+                exitHandler.exit();
             }
 
             if (argindex >= args.length) {
@@ -654,7 +669,7 @@ public class Client {
 
         if (argindex != args.length) {
             usageMessage();
-            System.exit(0);
+            exitHandler.exit();
         }
 
         //set up logging
@@ -689,13 +704,12 @@ public class Client {
                 e.printStackTrace();
             }
             System.out.println("Cluster initialised: exiting");
-            System.exit(0);
+            exitHandler.exit();
         }
 
         if (!checkRequiredProperties(props)) {
-            System.exit(0);
+            exitHandler.exit();
         }
-
 
 
         //compute the target throughput
@@ -743,7 +757,7 @@ public class Client {
         } catch (Exception e) {
             e.printStackTrace();
             e.printStackTrace(System.out);
-            System.exit(0);
+            exitHandler.exit();
         }
 
         try {
@@ -751,7 +765,7 @@ public class Client {
         } catch (WorkloadException e) {
             e.printStackTrace();
             e.printStackTrace(System.out);
-            System.exit(0);
+            exitHandler.exit();
         }
 
         warningthread.interrupt();
@@ -782,7 +796,7 @@ public class Client {
                     db = DBFactory.rawDB(dbname, props);
                 } catch (UnknownDBException e) {
                     System.out.println("Unknown DB " + dbname);
-                    System.exit(0);
+                    exitHandler.exit();
                 }
                 Thread t = new WarmupThread(db, dotransactions, workload, props,
                         warmupopcount / threadcount, targetperthreadperms, warmupexectime);
@@ -810,7 +824,7 @@ public class Client {
                 db = DBFactory.wrappedDB(dbname, props);
             } catch (UnknownDBException e) {
                 System.out.println("Unknown DB " + dbname);
-                System.exit(0);
+                exitHandler.exit();
             }
             Thread t = new ClientThread(db, dotransactions, workload, props, opcount / threadcount, targetperthreadperms);
             threads.add(t);
@@ -887,7 +901,7 @@ public class Client {
         } catch (WorkloadException e) {
             e.printStackTrace();
             e.printStackTrace(System.out);
-            System.exit(0);
+            exitHandler.exit();
         }
 
         //try
@@ -900,6 +914,7 @@ public class Client {
         //	System.exit(-1);
         //}
 
-        System.exit(0);
+        exitHandler.exit();
     }
+
 }

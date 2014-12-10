@@ -108,7 +108,6 @@ public class YcsbWorkloadTest {
         int max = 0;
         for (String key : keys) {
             int numberPart = Integer.valueOf(key.substring(4, key.length()));
-            System.out.println(numberPart);
             if (numberPart > max) {
                 max = numberPart;
             }

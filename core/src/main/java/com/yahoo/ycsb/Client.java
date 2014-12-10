@@ -697,7 +697,8 @@ public class Client {
             DB db = null;
             try {
                 db = DBFactory.rawDB(dbname, props);
-                db.initCluster();
+                if(db instanceof DBPlus)
+                    ((DBPlus) db).initialiseTablesEtc();
             } catch (UnknownDBException e) {
                 System.out.println("Unknown DB " + dbname);
             } catch (DBException e) {

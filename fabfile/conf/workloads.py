@@ -3,11 +3,11 @@ root = '/opt/ycsb'  # root of YCSB installation
 
 data = {
     # global YSCB properties
-    'operationcount': 100000,  #Total operations (writes or reads during a workload)
-    'insertcount': 1000000,    #How many objects to write during load phase
-    'recordcount': 1000000,    #Specifies the keyspaace for reads
+    'operationcount': 1000000,    #Total operations (writes or reads during a workload)
+    'insertcount':    1000000,    #How many objects to write during load phase
+    'recordcount':    1000000,    #Specifies the keyspaace for reads
 
-    'fieldcount': 10,          # the value is a list of this many byte arrays
+    'fieldcount': 1,          # the value is a list of this many byte arrays
     'fieldlength': 1000,       # either exactly or approximately this length depending on fieldlengthdistribution
     'fieldlengthdistribution': 'constant',  # can also be zipfian or uniform but zipfian isn't working currently
 

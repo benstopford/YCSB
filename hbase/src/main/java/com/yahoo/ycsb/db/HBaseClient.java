@@ -414,10 +414,6 @@ public class HBaseClient extends com.yahoo.ycsb.DB
         return Ok;
     }
 
-    @Override
-    public int initCluster() throws DBException {
-        return 0;
-    }
 }
 
 /* For customized vim control

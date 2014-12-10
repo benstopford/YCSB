@@ -206,11 +206,6 @@ public class MongoDbClient extends DB {
         }
     }
 
-    @Override
-    public int initCluster() throws DBException {
-        System.out.println("Nothing to do here");
-        return 0;
-    }
 
     @Override
     /**

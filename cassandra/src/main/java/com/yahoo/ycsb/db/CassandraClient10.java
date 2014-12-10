@@ -551,11 +551,6 @@ public class CassandraClient10 extends DB
         return Ok;
     }
 
-    @Override
-    public int initCluster() throws DBException {
-        return 0;
-    }
-
     public static void main(String[] args)
     {
         CassandraClient10 cli = new CassandraClient10();

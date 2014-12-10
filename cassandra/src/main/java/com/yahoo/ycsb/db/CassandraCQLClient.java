@@ -22,10 +22,7 @@ import com.datastax.driver.core.exceptions.AlreadyExistsException;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
-import com.yahoo.ycsb.ByteArrayByteIterator;
-import com.yahoo.ycsb.ByteIterator;
-import com.yahoo.ycsb.DB;
-import com.yahoo.ycsb.DBException;
+import com.yahoo.ycsb.*;
 import com.yahoo.ycsb.workloads.CoreWorkload;
 
 import java.nio.ByteBuffer;
@@ -54,7 +51,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author cmatser
  */
-public class CassandraCQLClient extends DB {
+public class CassandraCQLClient extends DBPlus {
     private static Cluster cluster = null;
     private static Session session = null;
 
@@ -92,7 +89,7 @@ public class CassandraCQLClient extends DB {
 
 
     @Override
-    public int initCluster() throws DBException {
+    public int initialiseTablesEtc() throws DBException {
         String keyspace = initialiseCluster();
         session = cluster.connect();
         createKeyspace(session, keyspace);

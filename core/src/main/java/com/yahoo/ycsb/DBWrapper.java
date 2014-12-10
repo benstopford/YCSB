@@ -26,7 +26,7 @@ import java.util.Properties;
 /**
  * Wrapper around a "real" DB that measures latencies and counts return codes.
  */
-public class DBWrapper extends DB {
+public class DBWrapper extends DBPlus {
     DB _db;
     Measurements _measurements;
 
@@ -321,7 +321,9 @@ public class DBWrapper extends DB {
     }
 
     @Override
-    public int initCluster() throws DBException {
-        return _db.initCluster();
+    public int initialiseTablesEtc() throws DBException {
+        if(_db instanceof DBPlus)
+            return ((DBPlus)_db).initialiseTablesEtc();
+        return 0;
     }
 }

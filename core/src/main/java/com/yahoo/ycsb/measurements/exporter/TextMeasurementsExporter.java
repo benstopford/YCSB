@@ -43,6 +43,6 @@ public class TextMeasurementsExporter implements MeasurementsExporter {
     }
 
     public void close() throws IOException {
-        this.ps.close();
+        this.ps.flush();
     }
 }

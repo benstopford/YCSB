@@ -172,10 +172,5 @@ public abstract class DB
 	 */
 	public abstract int delete(String table, String key);
 
-    /**
-     * Used in distributed instances of YCSB to initialise the cluster. This call should only be made once cluster-wide
-     * @return
-     */
-    public abstract int initCluster() throws DBException;
 
 }

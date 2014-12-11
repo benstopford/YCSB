@@ -8,13 +8,16 @@ import helpers
 import os
 import time
 import math
-from amazonctl.db import db_up      as db_up
-from amazonctl.db import db_down      as db_down
+from fabfile.amazonctl.db import db_up      as db_up
+from fabfile.amazonctl.db import db_down      as db_down
 from fabfile.charts.table_parser import data_table, column_defs
 from fabfile.charts.panda_parser import convert_to_panda
+from fabfile.conf.hosts import host_counts
+from fabfile.amazonctl.ec2 import ec2_up     as ec2_up
+from fabric.api import env as fabric_env
 
 
-summary_log = "growing_data_group_test_summary.log"
+summary_log = "test_summary.log"
 
 
 def delete_server_logs():
@@ -167,7 +170,7 @@ def run_until_throughput_stabalises(db, action):
     for threads in [1, 2, 4, 8, 16, 32, 64, 128, 256, 512]:
         conf['threadcount'] = threads
 
-        #Run the necessary action
+        # Run the necessary action
         action(db)
 
         # Break out if throughput has stabalised
@@ -178,12 +181,12 @@ def run_until_throughput_stabalises(db, action):
             # work out the deltas
             diff1 = throughput - last_tp
             diff2 = throughput - one_before_that
-            #zero negative deltas as downward jumps can be considered noise
+            # zero negative deltas as downward jumps can be considered noise
             if diff1 < 0:
                 diff1 = 0
             if diff1 < 0:
                 diff1 = 0
-            #break if we have gone up by less than 10% in the last three runs?
+            # break if we have gone up by less than 10% in the last three runs?
             tenPercent = throughput * 0.1
             if diff1 < tenPercent and diff2 < tenPercent:
                 log('we reached a maximum throughput at threadcount=%s : [%s]->[%s]->[%s]' % (
@@ -208,10 +211,10 @@ def find_optimum_threads_for_load(db):
 
 
 def workload_action(workload):
-    return lambda db : run_workload(db, workload)
+    return lambda db: run_workload(db, workload)
 
 
-def find_optimum_threads_for_workload(db):
+def find_optimum_threads_for_workload(db, workload='A'):
     initialise()
 
     # load test data: 100MB
@@ -229,10 +232,27 @@ def find_optimum_threads_for_workload(db):
 
     initialise(False)
 
-    run_until_throughput_stabalises(db, workload_action('A'))
+    run_until_throughput_stabalises(db, workload_action(workload))
 
 
-def growing_test(db, iterations=10, mode='run'):
+def node_growth_test(db, end=5):
+    start = len(fabric_env.roledefs['db_public_ip'])
+    log("Starting node growth test from: %s => %s" % (start, end))
+
+    initialise()
+
+    for node_count in range(start, end + 1):
+        host_counts['db']=node_count
+        ec2_up(db)
+        log('EC2 Cluster has been upgraded to %s nodes' % host_counts['db'])
+        db_up(db)
+        log('%s Cluster has been upgraded to %s nodes' % (db, host_counts['db']))
+
+        find_optimum_threads_for_workload(db, 'C')
+
+
+
+def data_growth_test(db, iterations=10, mode='run'):
     iter = int(iterations)
 
     log('This test will load approximately %sMB of data spread over %s runs' % (

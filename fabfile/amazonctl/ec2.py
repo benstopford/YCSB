@@ -5,9 +5,8 @@ from fabfile.helpers import get_db
 from fabfile.amazonctl.amazon_ip import *
 from fabfile.conf.machine_config import core_machine_settings
 from fabfile.util.print_utils import emphasis
-from fabfile.group_test import ycsb_run_status
 import time
-from fabfile.conf.hosts import db_node_count, ycsb_node_count, ami, instance_type, key_name, security_group, \
+from fabfile.conf.hosts import host_counts, ami, instance_type, key_name, security_group, \
     use_instance_store, ebs_disk_allocation
 
 
@@ -74,8 +73,8 @@ def start_db_ec2_instance(node_count, tag):
 def ec2_up(db):
     include_management_node = get_db(db)['has_management_node']
 
-    dbs = [('DB', int(db_node_count)),
-           ('YCSB', int(ycsb_node_count))]
+    dbs = [('DB', host_counts['db']),
+           ('YCSB', host_counts['ycsb'])]
 
     if include_management_node:
         dbs += [('DB_MAN', 1)]
@@ -131,7 +130,9 @@ def ec2_status():
 
 @roles('ycsb_public_ip')
 def test():
-    ycsb_run_status('mongodb')
+    print 'starting'
+
+
 
 
 

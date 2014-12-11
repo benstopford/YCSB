@@ -7,9 +7,10 @@ _amz_linux_instance_store_para = 'ami-0318e374'
 _amz_linux_instance_store_hvm = 'ami-0f21df78'
 
 # *********** General Settings ***************
-
-db_node_count = "2"
-ycsb_node_count = "6"
+host_counts = {
+    'db': 2,
+    'ycsb': 6
+}
 
 testing = False
 use_instance_store = False
@@ -17,7 +18,7 @@ use_instance_store = False
 enable_copperegg_monitoring = True
 
 
-#*********** EC2 Settings ***************
+# *********** EC2 Settings ***************
 
 #For testing use the smallest instances (which require EBS storage)
 

@@ -17,9 +17,10 @@ from ycsb import kill                   as ycsb_kill
 from ycsb import clean_logs             as ycsb_clean
 from ycsb import intialise_tables       as ycsb_inittables
 
-from group_test import growing_test as group
-from group_test import find_optimum_threads_for_load as load_threads
-from group_test import find_optimum_threads_for_workload as workload_threads
+from group_test import data_growth_test as data_growth
+from group_test import find_optimum_threads_for_load as threads_l
+from group_test import find_optimum_threads_for_workload as threads_w
+from group_test import node_growth_test as node
 
 
 

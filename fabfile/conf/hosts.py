@@ -6,10 +6,10 @@ _amz_linux_ebs_backed_para = 'ami-6e7bd919'
 _amz_linux_instance_store_para = 'ami-0318e374'
 _amz_linux_instance_store_hvm = 'ami-0f21df78'
 
-#*********** General Settings ***************
+# *********** General Settings ***************
 
 db_node_count = "2"
-ycsb_node_count = "10"
+ycsb_node_count = "6"
 
 testing = False
 use_instance_store = False
@@ -27,7 +27,11 @@ instance_type = {
     'DB': 't2.micro',
     'DB_MAN': 't2.micro'
 }
-ebs_disk_allocation = 8
+ebs_disk_allocation = {
+    'YCSB': 8,
+    'DB': 8,
+    'DB_MAN': 8
+}
 ami = {
     'YCSB': _amz_linux_ebs_backed_para,
     'DB': _amz_linux_ebs_backed_para,
@@ -61,7 +65,11 @@ if not testing:
         'DB': _amz_linux_ebs_backed_para,
         'DB_MAN': _amz_linux_ebs_backed_para
     }
-    ebs_disk_allocation = 1000 #ycsb nodes always get 8
+    ebs_disk_allocation = {
+        'YCSB': 8,
+        'DB': 100,
+        'DB_MAN': 8
+    }
 
 ycsb_ec2_user = 'ec2-user'
 key_name = 'datalabs-dsc1'

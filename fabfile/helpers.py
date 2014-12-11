@@ -9,7 +9,7 @@ from conf import hosts, databases, workloads
 basetime = None
 
 
-def base_time(time=None, round_sec=60, tz = hosts.timezone):
+def base_time(time=None, round_sec=30, tz = hosts.timezone):
     """
     Get the next timestamp rounded to round_sec seconds
     the function returns some future time rounded accordingly
@@ -53,7 +53,7 @@ def get_outfilename(databasename, workloadname, extension, the_time, target=None
 
 def get_properties(database, workload=None):
     properties = {}
-    for (key, value) in workloads.data.items():
+    for (key, value) in workloads.conf.items():
         properties[key] = value
     for (key, value) in database['properties'].items():
         properties[key] = value

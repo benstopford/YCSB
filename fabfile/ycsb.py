@@ -14,21 +14,21 @@ def _ycsbloadcmd(database, clientno, timestamp, target=None):
         if key == 'operationcount':
             cmd += ' -p %s=%s' % (key, value / totalclients)
         elif key == 'insertcount':
-            insertcount = workloads.data['insertcount'] / totalclients
+            insertcount = workloads.conf['insertcount'] / totalclients
             cmd += ' -p insertcount=%s' % insertcount
         else:
             cmd += ' -p %s=%s' % (key, value)
 
 
-    #insert start isn't in workloads.data as there is no reason to configure it
-    if 'insertstart' in workloads.data.keys():
-        starting_point = workloads.data['insertstart']
-        insertstart = starting_point + insertcount * clientno
-        cmd += ' -p insertstart=%s' % insertstart
+    starting_point = 0
+    if 'insertstart' in workloads.conf.keys():
+        starting_point = workloads.conf['insertstart']
+    insertstart = starting_point + insertcount * clientno
+    cmd += ' -p insertstart=%s' % insertstart
 
     #record count is the keyspace used for reads. If it has not been set just default it to the insert count
-    if 'recordcount' not in workloads.data.keys():
-        cmd += ' -p recordcount=%s' % workloads.data['insertcount']
+    if 'recordcount' not in workloads.conf.keys():
+        cmd += ' -p recordcount=%s' % workloads.conf['insertcount']
 
     if target is not None:
         cmd += ' -target %s' % str(target)

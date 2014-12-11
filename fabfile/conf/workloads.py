@@ -1,17 +1,19 @@
 root = '/opt/ycsb'  # root of YCSB installation
 # TIME_DURATION = 20*60  #seconds
 
-data = {
+conf = {
     # global YSCB properties
-    'operationcount': 1000000,    #Total operations (writes or reads during a workload)
-    'insertcount':    1000000,    #How many objects to write during load phase
-    'recordcount':    1000000,    #Specifies the keyspaace for reads
+    'operationcount': 10000000,    #Total operations (writes or reads during a workload)
+    'insertcount':    10000000,    #How many objects to write during load phase
+    'recordcount':    10000000,    #Specifies the keyspaace for reads
 
     'fieldcount': 1,          # the value is a list of this many byte arrays
     'fieldlength': 1000,       # either exactly or approximately this length depending on fieldlengthdistribution
     'fieldlengthdistribution': 'constant',  # can also be zipfian or uniform but zipfian isn't working currently
 
-    'threadcount': 20,
+    # 'bulkloadsize':1000,      #loads will batch by this amount
+
+    'threadcount': 50,
     'workload': 'com.yahoo.ycsb.workloads.CoreWorkload',
     'exportmeasurementsinterval': 30000,
 

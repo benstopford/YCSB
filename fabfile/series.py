@@ -51,7 +51,7 @@ def prepare_ycsbruncmd(the_hosts, dir_name, database, workload, the_time, target
         par += ' -P %s' % file
     for (key, value) in get_properties(database, workload).items():
         par += ' -p %s=%s' % (key, value)
-    for (key, value) in workloads.data.items():
+    for (key, value) in workloads.conf.items():
         if key == 'operationcount':
             par += ' -p %s=%s' % (key, int(value) / len(the_hosts))
         else:
@@ -148,7 +148,7 @@ def submit_workload(the_hosts, dir_name, db, workload, the_time, target = None):
 def delay(wl, t):
     """ Returns estimated delay (run time) for the test with parameter t.
     In seconds """
-    opc = workloads.data['operationcount']
+    opc = workloads.conf['operationcount']
     # redefine operation count if the workload hath
     workload = get_workload(wl)
     if 'properties' in workload:

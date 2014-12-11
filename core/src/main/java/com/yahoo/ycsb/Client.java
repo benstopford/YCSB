@@ -21,6 +21,7 @@ package com.yahoo.ycsb;
 import com.yahoo.ycsb.measurements.Measurements;
 import com.yahoo.ycsb.measurements.exporter.MeasurementsExporter;
 import com.yahoo.ycsb.measurements.exporter.TextMeasurementsExporter;
+import com.yahoo.ycsb.workloads.CoreWorkload;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -124,8 +125,7 @@ class ExportMeasurementsThread extends Thread {
      */
     private long sleeptime;
 
-    public ExportMeasurementsThread(Vector<Thread> threads, MeasurementsExporter exporter, long exportmeasurementsinterval) throws FileNotFoundException
-    {
+    public ExportMeasurementsThread(Vector<Thread> threads, MeasurementsExporter exporter, long exportmeasurementsinterval) throws FileNotFoundException {
         _threads = threads;
         this.exporter = exporter;
         this.sleeptime = exportmeasurementsinterval;
@@ -533,10 +533,11 @@ public class Client {
         }
     }
 
-    public interface ExitHandler{
+    public interface ExitHandler {
         void exit();
     }
-    private static class DefaultExitHandler implements ExitHandler{
+
+    private static class DefaultExitHandler implements ExitHandler {
 
         @Override
         public void exit() {
@@ -697,7 +698,7 @@ public class Client {
             DB db = null;
             try {
                 db = DBFactory.rawDB(dbname, props);
-                if(db instanceof DBPlus)
+                if (db instanceof DBPlus)
                     ((DBPlus) db).initialiseTablesEtc();
             } catch (UnknownDBException e) {
                 System.out.println("Unknown DB " + dbname);
@@ -783,6 +784,11 @@ public class Client {
                 opcount = Integer.parseInt(props.getProperty(INSERT_COUNT_PROPERTY, "0"));
             } else {
                 opcount = Integer.parseInt(props.getProperty(RECORD_COUNT_PROPERTY, "0"));
+            }
+            if (props.containsKey(CoreWorkload.BULK_LOAD_OP_SIZE)) {
+                int batch = Integer.valueOf(props.getProperty(CoreWorkload.BULK_LOAD_OP_SIZE));
+                if (batch > 0)
+                    opcount = opcount / batch;
             }
         }
 

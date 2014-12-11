@@ -1,5 +1,8 @@
 package com.yahoo.ycsb;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public abstract class DBPlus extends DB {
 
     /**
@@ -9,4 +12,5 @@ public abstract class DBPlus extends DB {
      */
     public abstract int initialiseTablesEtc() throws DBException;
 
+    public abstract int insertBatch(String table, Map<String, HashMap<String,ByteIterator>> batch);
 }

@@ -12,21 +12,21 @@ package com.yahoo.ycsb.db;
 import com.mongodb.*;
 import com.yahoo.ycsb.ByteArrayByteIterator;
 import com.yahoo.ycsb.ByteIterator;
-import com.yahoo.ycsb.DB;
 import com.yahoo.ycsb.DBException;
+import com.yahoo.ycsb.DBPlus;
 
 import java.io.UnsupportedEncodingException;
 import java.util.*;
 
 /**
  * MongoDB client for YCSB framework.
- *
+ * <p/>
  * Properties to set:
- *
+ * <p/>
  * mongodb.url=mongodb://localhost:27017
  * mongodb.database=ycsb
  * mongodb.writeConcern=(none|normal|safe|fsync_safe|replicas_safe|custom)
- *
+ * <p/>
  * If custom:
  * mongodb.writeConcern.w=(-1|0|1|2)
  * mongodb.writeConcern.wtimeout=(0|other value in ms)
@@ -34,23 +34,22 @@ import java.util.*;
  * mongodb.writeConcern.j=(true|false)
  * mongodb.writeConcern.continueOnInsertError=(true|false)
  * mongodb.readPreference=secondaryPreferred
- *
+ * <p/>
  * mongodb.writeConcert.X override specific parameters defined by general writeConcern property.
- *
+ * <p/>
  * Default values:
- *
+ * <p/>
  * mongodb.url=mongodb://localhost:27017
  * mongodb.database=ycsb
  * mongodb.writeConcern=safe
  * mongodb.readPreference=primary
  *
- * @link http://api.mongodb.org/java/2.10.1/com/mongodb/WriteConcern.html
- * @link http://api.mongodb.org/java/2.10.1/com/mongodb/ReadPreference.html
  * @author ypai
  * @author dnelubin
- *
+ * @link http://api.mongodb.org/java/2.10.1/com/mongodb/WriteConcern.html
+ * @link http://api.mongodb.org/java/2.10.1/com/mongodb/ReadPreference.html
  */
-public class MongoDbClient extends DB {
+public class MongoDbClient extends DBPlus {
 
     Mongo mongo;
     WriteConcern writeConcern;
@@ -66,7 +65,7 @@ public class MongoDbClient extends DB {
         // initialize MongoDb driver
         Properties props = getProperties();
         String url = props.getProperty("mongodb.url", "mongodb://localhost:27017");
-        if(url.contains(",")){
+        if (url.contains(",")) {
             //pick one and random
             String[] urls = url.split(",");
             int index = new Random().nextInt(urls.length);
@@ -80,11 +79,11 @@ public class MongoDbClient extends DB {
         if (writeConcernValue.equals("CUSTOM")) {
             String writeConcernWValue = props.getProperty("mongodb.writeConcern.w", String.valueOf(writeConcern.getW()));
             String writeConcernWtimeoutValue = props.getProperty("mongodb.writeConcern.wtimeout",
-                                                                 String.valueOf(writeConcern.getWtimeout()));
+                    String.valueOf(writeConcern.getWtimeout()));
             String writeConcernFsyncValue = props.getProperty("mongodb.writeConcern.fsync", String.valueOf(writeConcern.getFsync()));
             String writeConcernJValue = props.getProperty("mongodb.writeConcern.j", String.valueOf(writeConcern.getJ()));
             String writeConcernContinueValue = props.getProperty("mongodb.writeConcern.continueOnErrorForInsert",
-                                                                 String.valueOf(writeConcern.getContinueOnErrorForInsert()));
+                    String.valueOf(writeConcern.getContinueOnErrorForInsert()));
 
             int writeConcernWInt = Integer.MIN_VALUE;
             try {
@@ -99,35 +98,35 @@ public class MongoDbClient extends DB {
                 writeTimeoutInt = Integer.parseInt(writeConcernWtimeoutValue);
             } catch (NumberFormatException e) {
                 System.err.println("ERROR: Invalid writeConcern.wtimeout: '" + writeConcernWtimeoutValue + "'. " +
-                                   "Must be integer");
+                        "Must be integer");
                 System.exit(1);
             }
 
             if (!"true".equalsIgnoreCase(writeConcernFsyncValue) && !"false".equalsIgnoreCase(writeConcernFsyncValue)) {
                 System.err.println("ERROR: Invalid writeConcern.fsync: '" + writeConcernFsyncValue + "'. " +
-                                   "Must be true or false");
+                        "Must be true or false");
                 System.exit(1);
-            };
+            }
+            ;
 
             if (!"true".equalsIgnoreCase(writeConcernJValue) && !"false".equalsIgnoreCase(writeConcernJValue)) {
                 System.err.println("ERROR: Invalid writeConcern.j: '" + writeConcernJValue + "'. " +
-                                   "Must be true or false");
+                        "Must be true or false");
                 System.exit(1);
             }
 
             if (!"true".equalsIgnoreCase(writeConcernContinueValue) && !"false".equalsIgnoreCase(writeConcernContinueValue)) {
                 System.err.println("ERROR: Invalid writeConcern.continueOnErrorForInsert: '" + writeConcernContinueValue + "'. " +
-                                   "Must be true or false");
+                        "Must be true or false");
                 System.exit(1);
             }
 
             writeConcern = new WriteConcern(writeConcernWInt,
-                                            writeTimeoutInt,
-                                            Boolean.parseBoolean(writeConcernFsyncValue),
-                                            Boolean.parseBoolean(writeConcernJValue),
-                                            Boolean.parseBoolean(writeConcernContinueValue));
-        }
-        else {
+                    writeTimeoutInt,
+                    Boolean.parseBoolean(writeConcernFsyncValue),
+                    Boolean.parseBoolean(writeConcernJValue),
+                    Boolean.parseBoolean(writeConcernContinueValue));
+        } else {
             writeConcern = WriteConcern.valueOf(writeConcernValue);
         }
 
@@ -144,10 +143,10 @@ public class MongoDbClient extends DB {
             }
 
             // need to append db to url.
-            url += "/"+database;
-            System.out.println("new database url = "+url);
+            url += "/" + database;
+            System.out.println("new database url = " + url);
             mongo = new Mongo(new DBAddress(url));
-            System.out.println("mongo connection created with "+url);
+            System.out.println("mongo connection created with " + url);
         } catch (Exception e1) {
             System.err.println(
                     "Could not initialize MongoDB connection pool for Loader: "
@@ -157,24 +156,23 @@ public class MongoDbClient extends DB {
         }
 
     }
-    
+
     @Override
-	/**
-	 * Cleanup any state for this DB.
-	 * Called once per DB instance; there is one DB instance per client thread.
-	 */
-	public void cleanup() throws DBException
-	{
+    /**
+     * Cleanup any state for this DB.
+     * Called once per DB instance; there is one DB instance per client thread.
+     */
+    public void cleanup() throws DBException {
         try {
-        	mongo.close();
+            mongo.close();
         } catch (Exception e1) {
-        	System.err.println(
+            System.err.println(
                     "Could not close MongoDB connection pool: "
                             + e1.toString());
             e1.printStackTrace();
             return;
         }
-	}
+    }
 
     @Override
     /**
@@ -185,7 +183,7 @@ public class MongoDbClient extends DB {
      * @return Zero on success, a non-zero error code on error. See this class's description for a discussion of error codes.
      */
     public int delete(String table, String key) {
-        com.mongodb.DB db=null;
+        com.mongodb.DB db = null;
         try {
             db = mongo.getDB(database);
             db.requestStart();
@@ -196,11 +194,8 @@ public class MongoDbClient extends DB {
         } catch (Exception e) {
             e.printStackTrace();
             return 1;
-        }
-        finally
-        {
-            if (db!=null)
-            {
+        } finally {
+            if (db != null) {
                 db.requestDone();
             }
         }
@@ -226,9 +221,9 @@ public class MongoDbClient extends DB {
 
             DBCollection collection = db.getCollection(table);
             DBObject r = new BasicDBObject().append("_id", key);
-	        for(String k: values.keySet()) {
-		        r.put(k, values.get(k).toArray());
-	        }
+            for (String k : values.keySet()) {
+                r.put(k, values.get(k).toArray());
+            }
             WriteResult res = collection.insert(r, writeConcern);
             String error = res.getError();
             if (error == null) {
@@ -241,8 +236,7 @@ public class MongoDbClient extends DB {
             e.printStackTrace();
             return 1;
         } finally {
-            if (db!=null)
-            {
+            if (db != null) {
                 db.requestDone();
             }
         }
@@ -259,7 +253,7 @@ public class MongoDbClient extends DB {
      * @param result A Map of field/value pairs for the result
      * @return Zero on success, a non-zero error code on error or "not found".
      */
-    public int readOne(String table, String key, String field, Map<String,ByteIterator> result) {
+    public int readOne(String table, String key, String field, Map<String, ByteIterator> result) {
 
         DBObject fieldsToReturn = new BasicDBObject();
         fieldsToReturn.put(field, 1);
@@ -277,14 +271,14 @@ public class MongoDbClient extends DB {
      * @param result A Map of field/value pairs for the result
      * @return Zero on success, a non-zero error code on error or "not found".
      */
-    public int readAll(String table, String key, Map<String,ByteIterator> result) {
+    public int readAll(String table, String key, Map<String, ByteIterator> result) {
 
         return read(table, key, result, null);
     }
 
 
     public int read(String table, String key, Map<String, ByteIterator> result,
-            DBObject fieldsToReturn) {
+                    DBObject fieldsToReturn) {
         com.mongodb.DB db = null;
         try {
             db = mongo.getDB(database);
@@ -303,8 +297,7 @@ public class MongoDbClient extends DB {
             e.printStackTrace();
             return 1;
         } finally {
-            if (db!=null)
-            {
+            if (db != null) {
                 db.requestDone();
             }
         }
@@ -333,12 +326,12 @@ public class MongoDbClient extends DB {
      * Update a record in the database. Any field/value pairs in the specified values Map will be written into the record with the specified
      * record key, overwriting any existing values with the same field name.
      *
-     * @param table The name of the table
-     * @param key The record key of the record to write.
+     * @param table  The name of the table
+     * @param key    The record key of the record to write.
      * @param values A Map of field/value pairs to update in the record
      * @return Zero on success, a non-zero error code on error.  See this class's description for a discussion of error codes.
      */
-    public int updateAll(String table, String key, Map<String,ByteIterator> values) {
+    public int updateAll(String table, String key, Map<String, ByteIterator> values) {
 
         DBObject fieldsToSet = new BasicDBObject();
         Iterator<String> keys = values.keySet().iterator();
@@ -373,8 +366,7 @@ public class MongoDbClient extends DB {
             e.printStackTrace();
             return 1;
         } finally {
-            if (db!=null)
-            {
+            if (db != null) {
                 db.requestDone();
             }
         }
@@ -414,8 +406,8 @@ public class MongoDbClient extends DB {
     }
 
     public int scan(String table, String startkey, int recordcount,
-            List<Map<String, ByteIterator>> result) {
-        com.mongodb.DB db=null;
+                    List<Map<String, ByteIterator>> result) {
+        com.mongodb.DB db = null;
         try {
             db = mongo.getDB(database);
             db.requestStart();
@@ -432,11 +424,8 @@ public class MongoDbClient extends DB {
         } catch (Exception e) {
             e.printStackTrace();
             return 1;
-        }
-        finally
-        {
-            if (db!=null)
-            {
+        } finally {
+            if (db != null) {
                 db.requestDone();
             }
         }
@@ -459,13 +448,55 @@ public class MongoDbClient extends DB {
                 } catch (UnsupportedEncodingException e) {
                     throw new RuntimeException(e);
                 }
-            }
-            else {
+            } else {
                 decoded.put(key, new ByteArrayByteIterator((byte[]) value));
             }
         }
 
         return decoded;
+    }
+
+    @Override
+    public int initialiseTablesEtc() throws DBException {
+        return 0;
+    }
+
+    @Override
+    public int insertBatch(String table, Map<String, HashMap<String, ByteIterator>> batch) {
+        com.mongodb.DB db = null;
+        try {
+            db = mongo.getDB(database);
+
+            db.requestStart();
+
+            DBCollection collection = db.getCollection(table);
+            List<DBObject> objects = new ArrayList<DBObject>();
+
+            for (String key : batch.keySet()) {
+                HashMap<String, ByteIterator> values = batch.get(key);
+                DBObject r = new BasicDBObject().append("_id", key);
+                for (String k : values.keySet()) {
+                    r.put(k, values.get(k).toArray());
+                }
+                objects.add(r);
+            }
+            WriteResult res = collection.insert(objects.toArray(new DBObject[]{}), writeConcern);
+            String error = res.getError();
+
+            if (error == null) {
+                return 0;
+            } else {
+                System.err.println(error);
+                return 1;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 1;
+        } finally {
+            if (db != null) {
+                db.requestDone();
+            }
+        }
     }
 }
 

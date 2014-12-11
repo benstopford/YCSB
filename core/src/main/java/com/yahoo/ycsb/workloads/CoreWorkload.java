@@ -266,9 +266,17 @@ public class CoreWorkload extends Workload {
 
 
     /**
+     * Indicates how many inserts to do, if less than recordcount. Useful for partitioning
+     * the load among multiple servers, if the client is the bottleneck. Additionally, workloads
+     * should support the "insertstart" property, which tells them which record to start at.
+     */
+    public static final String BULK_LOAD_OP_SIZE = "bulkloadsize";
+
+
+    /**
      * Used to track insert keys.
      * When using the "latest" distribution, this also tracks the highest readable key.
-     **/
+     */
     KeynumGenerator keynumGenerator;
     boolean trackLatestInsertForReads;
 
@@ -287,7 +295,8 @@ public class CoreWorkload extends Workload {
     String fieldnameprefix;
 
     boolean ignoreinserterrors;
-    
+    private Integer batchInsertSize;
+
     protected static IntegerGenerator getFieldLengthGenerator(Properties p) throws WorkloadException {
         IntegerGenerator fieldlengthgenerator;
         String fieldlengthdistribution = p.getProperty(FIELD_LENGTH_DISTRIBUTION_PROPERTY, FIELD_LENGTH_DISTRIBUTION_PROPERTY_DEFAULT);
@@ -326,7 +335,7 @@ public class CoreWorkload extends Workload {
         fieldnameprefix = p.getProperty(FIELD_NAME_PREFIX, FIELD_NAME_PREFIX_DEFAULT);
 
         ignoreinserterrors = Boolean.parseBoolean(p.getProperty(IGNORE_INSERT_ERRORS, IGNORE_INSERT_ERRORS_DEFAULT));
-        
+
         double readproportion = Double.parseDouble(p.getProperty(READ_PROPORTION_PROPERTY, READ_PROPORTION_PROPERTY_DEFAULT));
         double updateproportion = Double.parseDouble(p.getProperty(UPDATE_PROPORTION_PROPERTY, UPDATE_PROPORTION_PROPERTY_DEFAULT));
         double insertproportion = Double.parseDouble(p.getProperty(INSERT_PROPORTION_PROPERTY, INSERT_PROPORTION_PROPERTY_DEFAULT));
@@ -412,6 +421,12 @@ public class CoreWorkload extends Workload {
         } else {
             throw new WorkloadException("Distribution \"" + scanlengthdistrib + "\" not allowed for scan length");
         }
+
+        if (p.containsKey(BULK_LOAD_OP_SIZE)) {
+            batchInsertSize = Integer.valueOf(p.getProperty(BULK_LOAD_OP_SIZE));
+        } else {
+            batchInsertSize = 0;
+        }
     }
 
     public String buildKeyName(long keynum) {
@@ -446,6 +461,13 @@ public class CoreWorkload extends Workload {
      * effects other than DB operations.
      */
     public boolean doInsert(DB db, Object threadstate) {
+        if (batchInsertSize > 1)
+            return insertBatch(db, batchInsertSize);
+        else
+            return insertOne(db);
+    }
+
+    private boolean insertOne(DB db) {
         int result = -1;
         int keynum = keynumGenerator.startInsert();
         try {
@@ -494,6 +516,32 @@ public class CoreWorkload extends Workload {
     public boolean doRead(DB db, Object threadstate) {
         doTransactionRead(db);
         return true;
+    }
+
+    public boolean insertBatch(DB database, Integer batchSize) {
+        DBPlus db = (DBPlus) database;
+        int result;
+        Map<String, HashMap<String, ByteIterator>> batch = new HashMap();
+        while(batchSize-->0) {
+            int keynum = keynumGenerator.startInsert();
+            try {
+                String dbkey = buildKeyName(keynum);
+                HashMap<String, ByteIterator> values = buildValues();
+                batch.put(dbkey, values);
+            } finally {
+                keynumGenerator.completeInsert(keynum);
+            }
+        }
+        result = db.insertBatch(table, batch);
+
+        if (ignoreinserterrors) {
+            return true;
+        }
+        if (result == 0) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     int nextReadKeynum() {
@@ -546,8 +594,7 @@ public class CoreWorkload extends Workload {
             String fieldname = fieldnameprefix + fieldchooser.nextString();
             // read one field.
             db.readOne(table, keyname, fieldname, new HashMap<String, ByteIterator>());
-        }
-        else {
+        } else {
             // read all fields
             db.readAll(table, keyname, new HashMap<String, ByteIterator>());
         }
@@ -580,7 +627,7 @@ public class CoreWorkload extends Workload {
             String fieldname = fieldnameprefix + fieldchooser.nextString();
             db.scanOne(table, startkeyname, len, fieldname, new ArrayList<Map<String, ByteIterator>>());
         } else {
-            db.scanAll(table,startkeyname, len, new ArrayList<Map<String, ByteIterator>>());
+            db.scanAll(table, startkeyname, len, new ArrayList<Map<String, ByteIterator>>());
         }
     }
 

@@ -19,6 +19,7 @@ package com.yahoo.ycsb;
 
 import com.yahoo.ycsb.measurements.Measurements;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -324,6 +325,13 @@ public class DBWrapper extends DBPlus {
     public int initialiseTablesEtc() throws DBException {
         if(_db instanceof DBPlus)
             return ((DBPlus)_db).initialiseTablesEtc();
+        return 0;
+    }
+
+    @Override
+    public int insertBatch(String table, Map<String, HashMap<String, ByteIterator>> batch) {
+        if(_db instanceof DBPlus)
+            return ((DBPlus)_db).insertBatch(table, batch);
         return 0;
     }
 }

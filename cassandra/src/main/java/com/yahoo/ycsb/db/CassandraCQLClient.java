@@ -129,6 +129,11 @@ public class CassandraCQLClient extends DBPlus {
         return ERR;
     }
 
+    @Override
+    public int query(String table, String field, String searchTerm) {
+        return 0;
+    }
+
     /**
      * Initialize any state for this DB. Called once per DB instance; there is
      * one DB instance per client thread.

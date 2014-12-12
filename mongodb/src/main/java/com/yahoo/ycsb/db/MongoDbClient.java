@@ -498,5 +498,10 @@ public class MongoDbClient extends DBPlus {
             }
         }
     }
+
+    @Override
+    public int query(String table, String field, String searchTerm) {
+        return 0;
+    }
 }
 

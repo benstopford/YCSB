@@ -334,4 +334,11 @@ public class DBWrapper extends DBPlus {
             return ((DBPlus)_db).insertBatch(table, batch);
         return 0;
     }
+
+    @Override
+    public int query(String table, String field, String searchTerm) {
+        if(_db instanceof DBPlus)
+            return ((DBPlus)_db).query(table, field, searchTerm);
+        return 0;
+    }
 }

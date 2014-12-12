@@ -1,0 +1,11 @@
+
+workload=com.yahoo.ycsb.workloads.CoreWorkload
+ignoreSingleEntryLogging=true
+
+readallfields=true
+recordcount=0
+operationcount=0
+readproportion=0
+updateproportion=0
+scanproportion=0
+insertproportion=0

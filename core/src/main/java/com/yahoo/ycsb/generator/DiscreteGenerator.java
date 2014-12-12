@@ -17,11 +17,10 @@
 
 package com.yahoo.ycsb.generator;
 
-import java.util.Vector;
-import java.util.Random;
-
 import com.yahoo.ycsb.Utils;
 import com.yahoo.ycsb.WorkloadException;
+
+import java.util.Vector;
 
 /**
  * Generates a distribution by choosing from a discrete set of values.
@@ -74,7 +73,7 @@ public class DiscreteGenerator extends Generator
 		}
 
 		//should never get here.
-		System.out.println("oops. should not get here.");
+		System.err.println("oops. should not get here.");
 
 		System.exit(0);
 

@@ -17,6 +17,8 @@
 
 package com.yahoo.ycsb.measurements;
 
+import com.yahoo.ycsb.measurements.exporter.MeasurementsExporter;
+
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.Properties;
@@ -25,8 +27,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicIntegerArray;
 import java.util.concurrent.atomic.AtomicLong;
-
-import com.yahoo.ycsb.measurements.exporter.MeasurementsExporter;
 
 
 /**
@@ -37,6 +37,7 @@ import com.yahoo.ycsb.measurements.exporter.MeasurementsExporter;
 public class OneMeasurementHistogram extends OneMeasurement {
     public static final String BUCKETS = "histogram.buckets";
     public static final String BUCKETS_DEFAULT = "1000";
+    public static final String IGNORE_SINGLE_ENTRY_LOGGING = "ignoreSingleEntryLogging";
 
     private final AtomicInteger buckets;
     private final AtomicIntegerArray histogram;
@@ -52,11 +53,13 @@ public class OneMeasurementHistogram extends OneMeasurement {
     private final AtomicInteger min = new AtomicInteger(-1);
     private final AtomicInteger max = new AtomicInteger(-1);
     private final ConcurrentMap<Integer, AtomicInteger> returncodes = new ConcurrentHashMap<Integer, AtomicInteger>();
+    private final Boolean ignoreSingleEntryLogging;
 
     public OneMeasurementHistogram(String name, Properties props) {
         super(name);
         buckets = new AtomicInteger(Integer.parseInt(props.getProperty(BUCKETS, BUCKETS_DEFAULT)));
         histogram = new AtomicIntegerArray(buckets.get());
+        ignoreSingleEntryLogging = Boolean.valueOf(props.getProperty(IGNORE_SINGLE_ENTRY_LOGGING, "false"));
     }
 
     /* (non-Javadoc)
@@ -151,9 +154,10 @@ public class OneMeasurementHistogram extends OneMeasurement {
 
     @Override
     public void exportMeasurementsFinal(MeasurementsExporter exporter) throws IOException {
-        for (int i = 0; i < buckets.get(); i++) {
-            exporter.write(getName(), Integer.toString(i), histogram.get(i));
-        }
+        if(!ignoreSingleEntryLogging)
+            for (int i = 0; i < buckets.get(); i++) {
+                exporter.write(getName(), Integer.toString(i), histogram.get(i));
+            }
         exporter.write(getName(), ">" + buckets.get(), histogramoverflow.get());
         exportGeneralMeasurements(exporter);
     }

@@ -13,4 +13,6 @@ public abstract class DBPlus extends DB {
     public abstract int initialiseTablesEtc() throws DBException;
 
     public abstract int insertBatch(String table, Map<String, HashMap<String,ByteIterator>> batch);
+
+    public abstract int query(String table, String field, String searchTerm);
 }

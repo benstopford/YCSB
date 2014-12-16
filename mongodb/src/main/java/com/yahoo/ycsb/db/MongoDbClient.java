@@ -18,6 +18,8 @@ import com.yahoo.ycsb.DBPlus;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
 
+import static com.yahoo.ycsb.workloads.CoreWorkload.*;
+
 /**
  * MongoDB client for YCSB framework.
  * <p/>
@@ -202,6 +204,17 @@ public class MongoDbClient extends DBPlus {
     }
 
 
+    List<String> alreadyIndexed = new ArrayList<String>();
+
+    private boolean checkIndexed(DBCollection collection, String field) {
+        if (alreadyIndexed.contains(field))
+            return true;
+        System.out.println("Indexing " + field);
+        collection.createIndex(new BasicDBObject(field, 1));
+        alreadyIndexed.add(field);
+        return false;
+    }
+
     @Override
     /**
      * Insert a record in the database. Any field/value pairs in the specified values HashMap will be written into the record with the specified
@@ -222,7 +235,7 @@ public class MongoDbClient extends DBPlus {
             DBCollection collection = db.getCollection(table);
             DBObject r = new BasicDBObject().append("_id", key);
             for (String k : values.keySet()) {
-                r.put(k, values.get(k).toArray());
+                r.put(k, convert(values.get(k)));
             }
             WriteResult res = collection.insert(r, writeConcern);
             String error = res.getError();
@@ -240,6 +253,18 @@ public class MongoDbClient extends DBPlus {
                 db.requestDone();
             }
         }
+    }
+
+    private Object convert(ByteIterator byteIterator) {
+        if (queryMode())
+            return byteIterator.toString();
+        else
+            return byteIterator.toArray();
+    }
+
+    private boolean queryMode() {
+        return getProperties().containsKey(VALUE_GENERATOR_PROPERTY)
+                && getProperties().getProperty(VALUE_GENERATOR_PROPERTY).equals("queryable");
     }
 
     @Override
@@ -449,7 +474,10 @@ public class MongoDbClient extends DBPlus {
                     throw new RuntimeException(e);
                 }
             } else {
-                decoded.put(key, new ByteArrayByteIterator((byte[]) value));
+                if (queryMode())
+                    decoded.put(key, new ByteArrayByteIterator(((String) value).getBytes()));
+                else
+                    decoded.put(key, new ByteArrayByteIterator((byte[]) value));
             }
         }
 
@@ -458,6 +486,13 @@ public class MongoDbClient extends DBPlus {
 
     @Override
     public int initialiseTablesEtc() throws DBException {
+        if (queryMode()) {
+            com.mongodb.DB db = null;
+            String field = getProperties().getProperty(QUERY_FIELD_PROPERTY, QUERY_FIELD_PROPERTY_DEFAULT);
+            db = mongo.getDB(database);
+            DBCollection collection = db.getCollection(table);
+            checkIndexed(collection, field);
+        }
         return 0;
     }
 
@@ -476,7 +511,7 @@ public class MongoDbClient extends DBPlus {
                 HashMap<String, ByteIterator> values = batch.get(key);
                 DBObject r = new BasicDBObject().append("_id", key);
                 for (String k : values.keySet()) {
-                    r.put(k, values.get(k).toArray());
+                    r.put(k, convert(values.get(k)));
                 }
                 objects.add(r);
             }
@@ -500,8 +535,30 @@ public class MongoDbClient extends DBPlus {
     }
 
     @Override
-    public int query(String table, String field, String searchTerm) {
-        return 0;
+    public int query(String table, String field, String searchTerm, List<String> keysThatMatched) {
+        com.mongodb.DB db = null;
+        try {
+            db = mongo.getDB(database);
+            db.requestStart();
+            DBCollection collection = db.getCollection(table);
+            checkIndexed(collection, field);
+
+            BasicDBObject query = new BasicDBObject(field, searchTerm);
+            DBCursor cursor = collection.find(query);
+            while (cursor.hasNext()) {
+                Object key = cursor.next().get("_id");
+                keysThatMatched.add((String) key);
+            }
+
+            return 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 1;
+        } finally {
+            if (db != null) {
+                db.requestDone();
+            }
+        }
     }
 }
 

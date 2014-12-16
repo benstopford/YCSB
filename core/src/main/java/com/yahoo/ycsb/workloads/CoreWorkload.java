@@ -59,7 +59,7 @@ public class CoreWorkload extends Workload {
      */
     public static final String TABLENAME_PROPERTY_DEFAULT = "usertable";
 
-    private static final String VALUE_GENERATOR_PROPERTY = "valuegenerator";
+    public static final String VALUE_GENERATOR_PROPERTY = "valuegenerator";
     private static final String VALUE_GENERATOR_PROPERTY_DEFALUT = "randombyte";
     private static final String CARDINALITY = "cardinality";
     private static final String CARDINALITY_DEFAULT = "-1";
@@ -323,6 +323,7 @@ public class CoreWorkload extends Workload {
     boolean ignoreinserterrors;
     private Integer batchInsertSize;
     private String queryField;
+    private static Integer cardinality;
 
     protected static IntegerGenerator getFieldLengthGenerator(Properties p) throws WorkloadException {
         IntegerGenerator fieldlengthgenerator;
@@ -346,7 +347,7 @@ public class CoreWorkload extends Workload {
         }
         System.out.println("Using fieldlengthgenerator:" + fieldlengthgenerator.getClass().getName());
 
-        Integer cardinality = Integer.valueOf(p.getProperty(CARDINALITY, CARDINALITY_DEFAULT));
+        cardinality = Integer.valueOf(p.getProperty(CARDINALITY, CARDINALITY_DEFAULT));
         String valuegenerator = p.getProperty(VALUE_GENERATOR_PROPERTY, VALUE_GENERATOR_PROPERTY_DEFALUT);
         if ("queryable".equals(valuegenerator)) {
             if (cardinality < 1) {
@@ -565,10 +566,24 @@ public class CoreWorkload extends Workload {
     }
 
     private void doTransactionQuery(DB db) {
+        DBPlus dbPlus = (DBPlus) db;
+        List<String> keysThatMatched = new ArrayList<String>();
+        checkArgs(db);
+
+        String value = cardinalityBasedFieldCreator.nextValue().toString();
+        dbPlus.query(table, queryField, value, keysThatMatched);
+        checkReturnResult(keysThatMatched, queryField);
+    }
+
+    private void checkReturnResult(List<String> keysThatMatched, String queryField) {
+        MeasurementTracker.incrementQueryResultCount(keysThatMatched.size());
+    }
+
+    private void checkArgs(DB db) {
         if (!(db instanceof DBPlus))
             throw new RuntimeException("This database is not configured to support queries in the YCSB adapter");
-        DBPlus dbPlus = (DBPlus) db;
-        dbPlus.query(table, queryField, cardinalityBasedFieldCreator.nextValue().toString());
+        if (cardinalityBasedFieldCreator == null)
+            throw new RuntimeException("To run queries you must supply valuegenerator=queryable as well as cardinality=[some value greater than 0]");
     }
 
     @Override

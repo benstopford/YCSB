@@ -7,6 +7,7 @@ import org.testng.annotations.Test;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 
@@ -92,11 +93,15 @@ public class YcsbWorkloadTest extends TestBase {
     public void shouldQueryByFieldValues() throws FileNotFoundException, InterruptedException {
         int cardinality = 5;
         String fieldName = "field1";
+        int recordCount = 200;
+
+        TestDatabase.queryShouldReturn(new String[(int) Math.ceil(recordCount / cardinality)]);
+
         Client.run(new String[]{
                         "-db", "com.yahoo.ycsb.db.TestDatabase",
                         "-t",
                         "-P", emptyWorkload,
-                        "-p", "recordcount=25",
+                        "-p", "recordcount=" + recordCount,
                         "-p", "operationcount=" + operations,
                         "-p", "queryproportion=1",
                         "-p", "valuegenerator=queryable",
@@ -107,17 +112,16 @@ public class YcsbWorkloadTest extends TestBase {
                 , new LoggingExitHandler()
         );
 
-        assertEquals(TestDatabase.querys.size(), 25);
+        HashSet uniqueFields = new HashSet();
         for (String[] tuple : TestDatabase.querys) {
             String name = tuple[0];
             assertEquals(fieldName, name);
 
-            int searchValue = Integer.valueOf(tuple[1].trim());
-            assertTrue(searchValue <= cardinality && searchValue >= 0, "search value was " + searchValue);
+            String searchValue = tuple[1];
+            uniqueFields.add(searchValue);
         }
-        Thread.sleep(2000);
+        assertEquals(uniqueFields.size(), cardinality);
     }
-
 
     private void print(int[] buckets) {
         int count = 0;

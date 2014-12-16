@@ -21,6 +21,7 @@ from group_test import data_growth_test as data_growth
 from group_test import find_optimum_threads_for_load as threads_l
 from group_test import find_optimum_threads_for_workload as threads_w
 from group_test import node_growth_test as node
+from group_test import tail as tail
 
 
 

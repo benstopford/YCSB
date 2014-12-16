@@ -56,20 +56,8 @@ public class RandomByteIterator extends ByteIterator {
         this.bufOff = buf.length;
         fillBytes();
         this.off = 0;
-        increment(len);
+        MeasurementTracker.incrementConsumedBytes(len);
     }
-
-    private void increment(long by){
-        while(true){
-            long current = consumedBytes.get();
-            long next = current + by;
-
-            if(consumedBytes.compareAndSet(current, next)){
-                return;
-            }
-        }
-    }
-
     public byte nextByte() {
         fillBytes();
         bufOff++;
@@ -95,10 +83,6 @@ public class RandomByteIterator extends ByteIterator {
     @Override
     public long bytesLeft() {
         return len - off - bufOff;
-    }
-
-    public static long getTotalBytesWritten() {
-        return consumedBytes.longValue();
     }
 
 }

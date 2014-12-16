@@ -1,6 +1,6 @@
 from subprocess import *
 import time
-from fabric.api import settings, run, local, execute
+from fabric.api import settings, run, local, execute, parallel
 from fabfile.conf.hosts import ycsb_ec2_user
 from amazon_ip import *
 from socket import error as socket_error
@@ -47,6 +47,36 @@ def set_db_ssh_user(database):
 def set_ycsb_ssh_user():
     # set user back to ycsb user
     env.user = ycsb_ec2_user
+
+@parallel
+def _record(stage):
+    run(('echo "%s" >> action_log.txt' % stage))
+
+@parallel
+def simgle_host_complete(stage):
+    result = run(('grep -s "%s" action_log.txt | wc -l'%stage))
+    return int(result)>0
+
+def stage_complete(tag, stage):
+   result =  execute(
+        simgle_host_complete,
+        stage=stage,
+        hosts=get_external_ips(tag).split()
+    )
+   print 'result is '+str(result)
+   for r in result.values():
+       if not r:
+           return False
+   return True
+
+def record_stage(tag, stage):
+    execute(
+        _record,
+        stage=stage,
+        hosts=get_external_ips(tag).split()
+    )
+
+
 
 
 

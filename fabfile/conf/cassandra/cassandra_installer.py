@@ -2,6 +2,7 @@ from fabric.api import *
 from shutil import *
 import os
 from fabfile.conf.hosts import use_instance_store, instance_store_root_dir
+from fabfile.conf.hosts import addresses, running_db_node_count, running_ycsb_node_count
 
 
 def install_cassandra():
@@ -46,9 +47,9 @@ def prepare_directories():
 
 
 def make_substitutions(base, yaml):
-    seed = env.roledefs['db_private_ip'][0]
-    index = env.roledefs['db_public_ip'].index(env.host_string)
-    host_internal_ip = env.roledefs['db_private_ip'][index]
+    seed = addresses()['db_private_ip'][0]
+    index = addresses()['db_public_ip'].index(env.host_string)
+    host_internal_ip = addresses()['db_private_ip'][index]
 
     _commit_log_dir, _data_dir = prepare_directories()
 
@@ -100,15 +101,15 @@ def _configure():
 
 
 def install():
-    print 'Installing Cassandra on hosts: %s' % env.roledefs['db_public_ip']
+    print 'Installing Cassandra on hosts: %s' % addresses()['db_public_ip']
 
     execute(  # install in parallel
               _install,
-              hosts=env.roledefs['db_public_ip']
+              hosts=addresses()['db_public_ip']
     )
     execute(
         _configure,
-        hosts=env.roledefs['db_public_ip']
+        hosts=addresses()['db_public_ip']
     )
     print '********Cassandra is installed********'
 

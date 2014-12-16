@@ -23,10 +23,11 @@ public class TestByteIterator {
 
     @Test
     public void shouldTrackBytesWritten() {
+        MeasurementTracker.reset();
         new RandomByteIterator(700);
         new RandomByteIterator(200);
         new RandomByteIterator(100);
-        assertEquals(1000, RandomByteIterator.getTotalBytesWritten());
+        assertEquals(1000, MeasurementTracker.getConsumedBytes());
     }
 
 }

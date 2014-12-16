@@ -2,9 +2,11 @@ from fabric.api import *
 from shutil import *
 import os
 import time
+from fabfile.conf.hosts import addresses, running_db_node_count, running_ycsb_node_count
+
 
 def wait_to_cluster():
-    expected_node_count = len(env.roledefs['db_public_ip'])
+    expected_node_count = running_db_node_count()
     count = 0
 
     while 1:
@@ -26,14 +28,14 @@ def start_cassandra():
 
 
 def start():
-    print 'Starting Cassandra on hosts: %s' % env.roledefs['db_public_ip']
+    print 'Starting Cassandra on hosts: %s' % addresses()['db_public_ip']
     execute(
         start_cassandra,
-        hosts=env.roledefs['db_public_ip']
+        hosts=addresses()['db_public_ip']
     )
     execute(
         wait_to_cluster,
-        hosts=env.roledefs['db_public_ip'][0]
+        hosts=addresses()['db_public_ip'][0]
     )
     print '********Cassandra is running and clustered********'
 
@@ -46,7 +48,7 @@ def _stop():
 def stop():
     execute(
         _stop,
-        hosts=env.roledefs['db_public_ip']
+        hosts=addresses()['db_public_ip']
     )
 
 

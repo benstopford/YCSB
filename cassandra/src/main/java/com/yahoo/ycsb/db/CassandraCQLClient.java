@@ -130,7 +130,7 @@ public class CassandraCQLClient extends DBPlus {
     }
 
     @Override
-    public int query(String table, String field, String searchTerm) {
+    public int query(String table, String field, String searchTerm, List<String> keysThatMatched) {
         return 0;
     }
 

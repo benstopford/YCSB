@@ -1,5 +1,6 @@
 from fabric.api import *
 from fabfile.util.print_utils import emphasis
+from fabfile.conf.hosts import addresses, running_db_node_count, running_ycsb_node_count
 
 @parallel
 def install_mongodb():
@@ -27,5 +28,5 @@ def install_mongodb():
 def install():
     execute(
         install_mongodb,
-        hosts=env.roledefs['db_public_ip']+env.roledefs['man_public_ip']
+        hosts=addresses()['db_public_ip']+addresses()['man_public_ip']
     )

@@ -4,7 +4,7 @@ import re
 
 from fabric.context_managers import settings, hide
 from fabric.operations import run
-from conf import hosts, databases, workloads
+from conf import hosts, db_config, workloads
 
 basetime = None
 
@@ -34,10 +34,10 @@ def almost_nothing():
     return settings(hide(), warn_only=True)
    
 
-def get_db(database):
-    if not databases.databases.has_key(database):
-        raise Exception("unconfigured database '%s'" % database)
-    return databases.databases[database]
+def get_db(db):
+    if not db_config.dbs().has_key(db):
+        raise Exception("unconfigured database '%s'" % db)
+    return db_config.dbs()[db]
 
 def get_workload(workload):
     if not workloads.workloads.has_key(workload):

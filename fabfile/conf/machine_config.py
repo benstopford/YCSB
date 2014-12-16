@@ -13,4 +13,3 @@ def core_machine_settings():
         # install copperegg monitoring
         if hosts.enable_copperegg_monitoring:
             run("curl -sk http://Og55q3qaSHjhVlto@api.copperegg.com/rc.sh | sudo sh")
-

@@ -1,20 +1,20 @@
 import subprocess
 from fabric.api import *
-from fabfile.amazonctl.amazon_helper import *
+import amazon_helper as helper
 from fabfile.helpers import get_db
 from fabfile.amazonctl.amazon_ip import *
 from fabfile.conf.machine_config import core_machine_settings
-from fabfile.util.print_utils import emphasis
+from fabfile.util.print_utils import emphasis, log
 import time
 from fabfile.conf.hosts import host_counts, ami, instance_type, key_name, security_group, \
-    use_instance_store, ebs_disk_allocation
+    use_instance_store, ebs_disk_allocation, refresh_hosts_cache, print_status
 
 
 def start(tag, node_count):
     """Starts defined database instances if they are not already running based on a tag and an expected count to be running"""
     current = len(get_external_ips(tag).split())
 
-    print emphasis('Starting nodes for tag: "%s"' % tag)
+    log('Starting nodes for tag: "%s"' % tag)
 
     if current >= node_count:
         print "Not starting new %s nodes as there are already %s running." % (tag, current)
@@ -29,16 +29,20 @@ def start(tag, node_count):
 
 
 def configure_machine_and_reboot(tag, node_count):
-    print emphasis('Executing pre-reboot-settings for %s' % tag)
+    log('Executing pre-reboot-settings for %s' % tag)
 
-    wait_for_tagged_hosts_to_start(tag, node_count)
+    helper.wait_for_tagged_hosts_to_start(tag, node_count)
 
     # Add machine specific config such as ulimits
-    execute(
-        core_machine_settings,
-        hosts=get_external_ips(tag).split()
-    )
-    reboot_instances(tag)
+    if not helper.stage_complete(tag, "core_machine_settings"):
+        execute(
+            core_machine_settings,
+            hosts=get_external_ips(tag).split()
+        )
+        helper.reboot_instances(tag)
+        helper.wait_for_tagged_hosts_to_start(tag, node_count)
+
+    helper.record_stage(tag, "core_machine_settings")
 
 
 def start_db_ec2_instance(node_count, tag):
@@ -71,15 +75,16 @@ def start_db_ec2_instance(node_count, tag):
 
 
 def ec2_up(db):
+    log('ec2_up on ' + db)
     include_management_node = get_db(db)['has_management_node']
 
-    dbs = [('DB', host_counts['db']),
-           ('YCSB', host_counts['ycsb'])]
+    dbs = [('DB', host_counts['DB']),
+           ('YCSB', host_counts['YCSB'])]
 
     if include_management_node:
         dbs += [('DB_MAN', 1)]
 
-    print emphasis('booting nodes for tags %s' % ", ".join([x[0] for x in dbs]))
+    log('booting nodes for tags %s' % ", ".join([x[0] for x in dbs]))
 
     # Start eveything up first (as slow)
     for tag in dbs:
@@ -89,10 +94,12 @@ def ec2_up(db):
     for tag in dbs:
         configure_machine_and_reboot(tag[0], tag[1])
 
+    refresh_hosts_cache()
+
     # Check started
     print emphasis("waiting for hosts to start after reboot - ctr-c if you don't want to wait")
     for tag in dbs:
-        wait_for_tagged_hosts_to_start(tag[0], tag[1])
+        helper.wait_for_tagged_hosts_to_start(tag[0], tag[1])
 
 
 def terminate_running_instances():
@@ -116,7 +123,7 @@ def delete_all_volumes():
 
 
 def ec2_down():
-    print emphasis('ec2_down')
+    log('ec2_down')
 
     terminate_running_instances()
     wait_for_instance_shutdown()
@@ -124,14 +131,13 @@ def ec2_down():
 
 
 def ec2_status():
+    print_status()
     out = Popen([dir + "ec2status"], stdout=PIPE).communicate()[0]
     print out
 
 
-@roles('ycsb_public_ip')
 def test():
-    print 'starting'
-
+    helper.record_stage('YCSB','ycsb-deploy')
 
 
 

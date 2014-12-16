@@ -1,10 +1,12 @@
 package com.yahoo.ycsb;
 
+import java.util.Arrays;
 import java.util.Random;
 
 public class CardinalityBasedFieldCreator {
     private int cardinality;
     private int length;
+    private Random random = new Random();
 
     public CardinalityBasedFieldCreator(int cardinality, int length) {
         this.cardinality = cardinality;
@@ -18,12 +20,13 @@ public class CardinalityBasedFieldCreator {
     }
 
     private byte[] getPrefixBytes() {
-        int prefix = Math.abs(new Random().nextInt()) % cardinality;
+        int prefix = Math.abs(random.nextInt()) % cardinality;
         return String.valueOf(prefix).getBytes();
     }
 
     private byte[] padToLength(byte[] stringPrefix, int length) {
-        byte[] byteValue = new byte[this.length];
+        byte[] byteValue = new byte[length];
+        Arrays.fill(byteValue, (byte)66);
         for(int i = 0; i < stringPrefix.length; i++){
             byteValue[i] = stringPrefix[i];
         }

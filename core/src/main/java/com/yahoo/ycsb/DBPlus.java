@@ -1,6 +1,7 @@
 package com.yahoo.ycsb;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public abstract class DBPlus extends DB {
@@ -14,5 +15,5 @@ public abstract class DBPlus extends DB {
 
     public abstract int insertBatch(String table, Map<String, HashMap<String,ByteIterator>> batch);
 
-    public abstract int query(String table, String field, String searchTerm);
+    public abstract int query(String table, String field, String searchTerm, List<String> keysThatMatched);
 }

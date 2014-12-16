@@ -6,6 +6,8 @@ from fabfile.util.file_utils import replace_in_file, append_line_to_file
 import tempfile
 import os
 from fabfile.conf.hosts import use_instance_store, instance_store_root_dir
+from fabfile.conf.hosts import addresses, running_db_node_count, running_ycsb_node_count
+
 
 instance_store_mondod_db_path = instance_store_root_dir+'/data'
 
@@ -32,7 +34,8 @@ def start_mongod():
 
     with settings(warn_only=True):
         sudo('rm /var/log/mongodb/mongod.log')
-    sudo('sudo service mongod stop')
+        sudo('sudo service mongod stop')
+
     sudo('sudo service mongod start')
     sudo('sudo chmod 777 /var/log/mongodb')
     sudo('sudo chmod 777 /var/log/mongodb/mongod.log')
@@ -69,7 +72,7 @@ def start_mongo_config_server():
 
 
 def start_mongos():
-    config_server = env.roledefs['man_public_ip'][0]
+    config_server = addresses()['man_public_ip'][0]
     sudo("killall -q mongos", warn_only=True)
     sudo(
         'echo "mongos --configdb %s:27027 --port 27028 >/var/log/mongodb/mongos.log 2>/var/log/mongodb/mongos-err.log" | at now' % config_server)
@@ -110,7 +113,7 @@ def run_mongo_shell(url, command, acceptable_error='', check_return_code=True):
 
 
 def configure_sharding():
-    mongods = env.roledefs['db_private_ip']
+    mongods = addresses()['db_private_ip']
 
     url = 'localhost:27028/ycsb'
     for mongod in mongods:
@@ -148,8 +151,8 @@ def stop_config_server():
 def start():
     """Runs MongoDB"""
 
-    mongo_nodes = env.roledefs['db_public_ip']
-    config_server = env.roledefs['man_public_ip']
+    mongo_nodes = addresses()['db_public_ip']
+    config_server = addresses()['man_public_ip']
 
     print 'stopping mongo first...'
     stop()
@@ -192,8 +195,8 @@ def start():
 
 def stop():
     """Stops Mongodb"""
-    mongo_nodes = env.roledefs['db_public_ip']
-    config_server = env.roledefs['man_public_ip']
+    mongo_nodes = addresses()['db_public_ip']
+    config_server = addresses()['man_public_ip']
     execute(
         stop_mongod,
         hosts=mongo_nodes

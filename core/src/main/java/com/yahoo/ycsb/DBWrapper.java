@@ -336,9 +336,9 @@ public class DBWrapper extends DBPlus {
     }
 
     @Override
-    public int query(String table, String field, String searchTerm) {
+    public int query(String table, String field, String searchTerm, List<String> keysThatMatched) {
         if(_db instanceof DBPlus)
-            return ((DBPlus)_db).query(table, field, searchTerm);
+            return ((DBPlus)_db).query(table, field, searchTerm, keysThatMatched);
         return 0;
     }
 }

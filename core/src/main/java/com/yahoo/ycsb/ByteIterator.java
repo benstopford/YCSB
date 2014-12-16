@@ -17,7 +17,6 @@
 package com.yahoo.ycsb;
 
 import java.util.Iterator;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * YCSB-specific buffer class.  ByteIterators are designed to support
@@ -44,7 +43,6 @@ import java.util.concurrent.atomic.AtomicLong;
  * @author sears
  */
 public abstract class ByteIterator implements Iterator<Byte> {
-    protected static AtomicLong consumedBytes = new AtomicLong();
 
 
     @Override

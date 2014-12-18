@@ -11,7 +11,7 @@ def dbs():
         'cassandra': {
             'name': 'cassandra',
             'home': '/home/%s' % hosts.ycsb_ec2_user,
-            'logs': '',
+            'logs': '/var/log/cassandra/system.log',
             'command': 'cassandra-cql',
             'has_management_node': False,
             'properties': {

@@ -22,7 +22,10 @@ import com.datastax.driver.core.exceptions.AlreadyExistsException;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
-import com.yahoo.ycsb.*;
+import com.yahoo.ycsb.ByteArrayByteIterator;
+import com.yahoo.ycsb.ByteIterator;
+import com.yahoo.ycsb.DBException;
+import com.yahoo.ycsb.DBPlus;
 import com.yahoo.ycsb.workloads.CoreWorkload;
 
 import java.nio.ByteBuffer;
@@ -86,6 +89,7 @@ public class CassandraCQLClient extends DBPlus {
     // YCSB always inserts a full row, but updates can be either full-row or single-column
     private static PreparedStatement insertStatement = null;
     private static Map<String, PreparedStatement> updateStatements = null;
+    private static PreparedStatement secondaryIndexQuery;
 
 
     @Override
@@ -129,10 +133,6 @@ public class CassandraCQLClient extends DBPlus {
         return ERR;
     }
 
-    @Override
-    public int query(String table, String field, String searchTerm, List<String> keysThatMatched) {
-        return 0;
-    }
 
     /**
      * Initialize any state for this DB. Called once per DB instance; there is
@@ -197,20 +197,33 @@ public class CassandraCQLClient extends DBPlus {
 
 
     private void createTable(Session session) {
-        String cql = "create table if not exists ycsb.usertable (\n" +
-                "     y_id varchar primary key,\n" +
-                "      field0 blob,\n" +
-                "      field1 blob,\n" +
-                "      field2 blob,\n" +
-                "      field3 blob,\n" +
-                "      field4 blob,\n" +
-                "      field5 blob,\n" +
-                "      field6 blob,\n" +
-                "      field7 blob,\n" +
-                "      field8 blob,\n" +
-                "      field9 blob);";
-        session.execute(cql);
-        System.out.println("Executed " + cql);
+        int fieldCount = Integer.parseInt(getProperties().getProperty(CoreWorkload.FIELD_COUNT_PROPERTY, CoreWorkload.FIELD_COUNT_PROPERTY_DEFAULT));
+
+        StringBuffer cql = new StringBuffer(
+                "create table if not exists ycsb.usertable (\n" +
+                "\ty_id varchar primary key,\n");
+        for(int i= 0; i<fieldCount-1; i++){
+            cql.append(String.format("\tfield%s blob,\n", i));
+        }
+        cql.append(String.format("\tfield%s blob);\n", fieldCount-1));
+
+        session.execute(cql.toString());
+        System.out.println("Created table " + cql);
+
+        if (getProperties().containsKey(CoreWorkload.QUERY_FIELD_PROPERTY)) {
+            String fieldToIndex = (String) getProperties().get(CoreWorkload.QUERY_FIELD_PROPERTY);
+            System.out.println("Creating index on " + fieldToIndex);
+            session.execute(String.format("CREATE INDEX IF NOT EXISTS usertable_%s_idx on ycsb.usertable (%s)", fieldToIndex, fieldToIndex));
+        }
+
+    }
+
+    private void sleep(int millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -286,6 +299,13 @@ public class CassandraCQLClient extends DBPlus {
                 scanStatements.put(fieldPrefix + i, ps);
             }
         }
+        if (getProperties().containsKey(CoreWorkload.QUERY_FIELD_PROPERTY)) {
+            String queryField = (String) getProperties().get(CoreWorkload.QUERY_FIELD_PROPERTY);
+            String ss = QueryBuilder.select().all().from(table).where(QueryBuilder.eq(queryField, QueryBuilder.bindMarker())).getQueryString();
+            secondaryIndexQuery = session.prepare(ss);
+            secondaryIndexQuery.setConsistencyLevel(readConsistencyLevel);
+        }
+
     }
 
     private String getScanQueryString() {
@@ -420,6 +440,7 @@ public class CassandraCQLClient extends DBPlus {
         }
     }
 
+
     /**
      * Update a record in the database. Any field/value pairs in the specified values Map will be written into the record with the specified
      * record key, overwriting any existing values with the same field name.
@@ -484,6 +505,30 @@ public class CassandraCQLClient extends DBPlus {
         }
 
         return ERR;
+    }
+
+
+    @Override
+    public int query(String table, String field, String searchTerm, List<String> keysThatMatched) {
+
+        BoundStatement bs = secondaryIndexQuery.bind(ByteBuffer.wrap(searchTerm.getBytes()));
+
+        try {
+            ResultSet rs = session.execute(bs);
+
+            Iterator<Row> iter = rs.iterator();
+            while (iter.hasNext()) {
+                Row row = iter.next();
+                ByteBuffer val = row.getBytesUnsafe(YCSB_KEY);
+                keysThatMatched.add(new String(val.array()));
+            }
+
+            return OK;
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Error querying with query: " + bs);
+            return ERR;
+        }
     }
 
     /**

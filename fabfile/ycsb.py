@@ -43,8 +43,13 @@ def _ycsbloadcmd(database, clientno, timestamp, target=None):
 
 
 def _ycsbdbinitcommand(database):
+    print 'initialising tables etc for '+database['name']
     cmd = 'bin/ycsb init %s -s' % database['command']
     cmd += ' -p hosts=%s' % addresses()['db_public_ip'][0]
+    for (key, value) in get_properties(database).items():
+        if key != 'hosts':
+            cmd += ' -p %s=%s' % (key, value)
+
     return cmd
 
 
@@ -71,15 +76,13 @@ def _ycsbruncmd(database, workload, timestamp, target=None):
 def _client_no():
     return addresses()['ycsb_public_ip'].index(env.host)
 
-@runs_once
-def intialise_tables(db):
+def _intialise_tables(db):
     database = get_db(db)
     local(_ycsbdbinitcommand(database))
 
 @parallel
-def do_load(db, target=None):
+def _do_load(db, target=None):
     log("Starting ycsb load phase [%s]" %env.host)
-    intialise_tables(db)
     timestamp = base_time()
     print green(timestamp, bold=True)
     clientno = _client_no()
@@ -94,8 +97,9 @@ def do_load(db, target=None):
 
 def load(db, target=None):
     """Starts loading of data to the database"""
+    _intialise_tables(db)
     execute(
-        do_load,
+        _do_load,
         db,
         target,
         hosts=addresses()['ycsb_public_ip']

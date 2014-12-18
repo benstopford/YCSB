@@ -15,7 +15,7 @@ from ycsb import get_log                as ycsb_get
 from ycsb import deploy                 as ycsb_deploy
 from ycsb import kill                   as ycsb_kill
 from ycsb import clean_logs             as ycsb_clean
-from ycsb import intialise_tables       as ycsb_inittables
+from ycsb import _intialise_tables       as ycsb_inittables
 
 from group_test import data_growth_test as data_growth
 from group_test import find_optimum_threads_for_load as threads_l

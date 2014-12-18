@@ -25,11 +25,7 @@ def delete_server_logs():
 
 def load(db):
     helpers.reset_base_time()
-    execute(
-        ycsb.do_load,
-        db,
-        hosts=addresses()['ycsb_public_ip']
-    )
+    ycsb.load(db)
     print log('Load has been started: [%s / %s]' % (conf['insertstart'], conf['insertcount']))
     await_completion(db)
     run_status_check(db)
@@ -52,19 +48,24 @@ def run_workload(db, wl):
     delete_server_logs()
 
 
-def print_tail(db, lines):
+def print_tail(db, lines, filter):
     database = get_db(db)
     with cd(database['home']):
-        latest_log = run("ls -ltr | awk 'END{print}' | awk {'print $9'};")
+        latest_log = ""
+        if len(filter)>0:
+            latest_log = run("ls -ltr | grep %s | awk 'END{print}' | awk {'print $9'};" % filter)
+        else:
+            latest_log = run("ls -ltr | awk 'END{print}' | awk {'print $9'};")
         if len(latest_log) > 0:
             print run('tail -n-%s %s' % (lines, latest_log))
 
 
-def tail(lines="70", db='basic'):
+def tail(lines="70", db='basic', filter=""):
     execute(
         print_tail,
         db,
         lines,
+        filter,
         hosts=addresses()['ycsb_public_ip']
     )
 
@@ -113,7 +114,7 @@ def ycsb_run_status(db):
                 raise Exception('Looks like there is something in the error log: %s : %s lines' % (
                     latest_err_log, int(lines_in_error_log)))
 
-            #Check for completion
+            # Check for completion
             complete = run('cat %s | grep "\[OVERALL\]" | wc -l' % latest_out_log)
             run('tail -n-4 %s' % latest_out_log)
             if int(complete) > 0:
@@ -131,7 +132,7 @@ def job_complete(db):
         hosts=first_host
     )
 
-    #if done check the others
+    # if done check the others
     if success > 0:
         result = execute(
             ycsb_run_status,
@@ -284,7 +285,7 @@ def node_growth_test(db, start=2, end=5, thread_start=1, workload='C', execution
     if start > running_db_node_count():
         host_counts['DB'] = start
 
-    #We need at least as many ycsb nodes as db nodes at the end of the test
+    # We need at least as many ycsb nodes as db nodes at the end of the test
     if end > running_ycsb_node_count():
         host_counts['YCSB'] = end
 
@@ -304,7 +305,7 @@ def node_growth_test(db, start=2, end=5, thread_start=1, workload='C', execution
             db_up(db)
             log('%s Cluster has been upgraded to %s nodes' % (db, running_db_node_count()))
 
-        _load(db,mb)
+        _load(db, mb)
 
         # Run the workload
         result = _find_optimum_threads_for_workload(db, thread_start, workload, execution_time)

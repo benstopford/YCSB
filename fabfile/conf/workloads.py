@@ -1,7 +1,7 @@
 root = '/opt/ycsb'  # root of YCSB installation
 # TIME_DURATION = 20*60  #seconds
 
-count = 1000000
+count = 1000
 cardinality = count / 10
 conf = {
     # global YSCB properties
@@ -17,6 +17,7 @@ conf = {
     'fieldlengthdistribution': 'constant',  # can also be zipfian or uniform but zipfian isn't working currently
 
     'valuegenerator': 'queryable',
+    'queryfield': 'field0',
 
 
 
@@ -24,7 +25,7 @@ conf = {
 
     # 'bulkloadsize':1000,      #loads will batch by this amount
 
-    'threadcount': 40,
+    'threadcount': 5,
     'workload': 'com.yahoo.ycsb.workloads.CoreWorkload',
     'exportmeasurementsinterval': 30000,
 
@@ -38,8 +39,6 @@ conf = {
 
     'reconnectiontime': 1000,
 
-    'valuegenerator': 'queryable',
-    'queryfield': 'field1',
 
 
     #'fieldnameprefix': 'f',

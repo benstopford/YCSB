@@ -149,7 +149,7 @@ class ExportMeasurementsThread extends Thread {
             exporter.write("OVERALL", "RunTime(ms)", runtime);
             exporter.write("OVERALL", "Operations", opcount);
             exporter.write("OVERALL", "DataWritten(B)", MeasurementTracker.getConsumedBytes());
-            exporter.write("OVERALL", "QueryResultCount", MeasurementTracker.getQueryResultCount());
+            exporter.write("OVERALL", "TotalQueryResults", MeasurementTracker.getQueryResultCount());
             double throughput = 1000.0 * ((double) opcount) / ((double) runtime);
             exporter.write("OVERALL", "Throughput(ops/sec)", throughput);
             exporter.close();
@@ -525,7 +525,7 @@ public class Client {
             double throughput = 1000.0 * ((double) opcount) / ((double) runtime);
             exporter.write("OVERALL", "Throughput(ops/sec)", throughput);
             exporter.write("OVERALL", "DataWritten(B)", MeasurementTracker.getConsumedBytes());
-            exporter.write("OVERALL", "QueryResultCount", MeasurementTracker.getQueryResultCount());
+            exporter.write("OVERALL", "TotalQueryResults", MeasurementTracker.getQueryResultCount());
 
             Measurements.getMeasurements().exportMeasurements(exporter);
         } finally {
@@ -552,7 +552,7 @@ public class Client {
         run(args, new DefaultExitHandler());
     }
 
-    static void run(String[] args, ExitHandler exitHandler) throws FileNotFoundException {
+    public static void run(String[] args, ExitHandler exitHandler) throws FileNotFoundException {
         String dbname;
         Properties props = new Properties();
         Properties fileprops = new Properties();
@@ -657,7 +657,7 @@ public class Client {
                 String name = args[argindex].substring(0, eq);
                 String value = args[argindex].substring(eq + 1);
                 props.put(name, value);
-                //System.out.println("["+name+"]=["+value+"]");
+//                System.out.println("["+name+"]=["+value+"]");
                 argindex++;
             } else {
                 System.out.println("Unknown option " + args[argindex]);

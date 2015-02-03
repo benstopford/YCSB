@@ -52,7 +52,7 @@ def print_tail(db, lines, filter):
     database = get_db(db)
     with cd(database['home']):
         latest_log = ""
-        if len(filter)>0:
+        if len(filter) > 0:
             latest_log = run("ls -ltr | grep %s | awk 'END{print}' | awk {'print $9'};" % filter)
         else:
             latest_log = run("ls -ltr | awk 'END{print}' | awk {'print $9'};")
@@ -240,7 +240,7 @@ def _load(db, mb=1000):
     conf['threadcount'] = 30
     conf['cardinality'] = (conf['insertcount'] / 10)
     load(db)
-
+    log("Load completed %sMB" % mb)
 
 def _find_optimum_threads_for_workload(db, thread_start, workload, execution_time=60):
     # should run for 90secs
@@ -257,7 +257,29 @@ def find_optimum_threads_for_workload(db, workload='A', thread_start=1):
     return _find_optimum_threads_for_workload(db, thread_start, workload)
 
 
-def node_growth_test(db, start=2, end=5, thread_start=1, workload='C', execution_time=60, mb=1000):
+def simple_max_load_test_multi_workload(db, thread_start=1, execution_time=60, mb=1000, include_load=True):
+    """Loads specified data into a database """
+    thread_start = int(thread_start)
+    execution_time = int(execution_time)
+    mb = int(mb)
+    include_load = bool(include_load)
+
+    initialise()
+    log("Starting simple max load test for a %s nodes and datasize of %sMB" % (running_db_node_count(), mb))
+
+    results = []
+
+    if include_load:
+        _load(db, mb)
+
+    for workload in ['A', 'B', 'C', 'H']:
+        result = _find_optimum_threads_for_workload(db, thread_start, workload, execution_time)
+        results.append([workload, result[0], result[1]])
+
+    log("Final result was: %s" % results)
+
+
+def node_growth_test(db, start=2, end=8, thread_start=20, workload='H', execution_time=60, mb=100):
     """ Establishes the maximum throughput, for a given workload, running
         on an increasingly larger cluster of machines.
         The test increments the number of machines by one,
@@ -289,7 +311,7 @@ def node_growth_test(db, start=2, end=5, thread_start=1, workload='C', execution
     if end > running_ycsb_node_count():
         host_counts['YCSB'] = end
 
-    #Boot everything
+    # Boot everything
     ec2_up(db)
     ycsb.deploy()
 
@@ -304,8 +326,8 @@ def node_growth_test(db, start=2, end=5, thread_start=1, workload='C', execution
             ec2_up(db)
             db_up(db)
             log('%s Cluster has been upgraded to %s nodes' % (db, running_db_node_count()))
-
-        _load(db, mb)
+        if mb > 0:
+            _load(db, mb)
 
         # Run the workload
         result = _find_optimum_threads_for_workload(db, thread_start, workload, execution_time)

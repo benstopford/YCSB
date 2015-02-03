@@ -9,8 +9,8 @@ _amz_linux_instance_store_hvm = 'ami-0f21df78'
 
 # *********** General Settings ***************
 host_counts = {
-    'DB': 2,
-    'YCSB': 2,
+    'DB': 1,
+    'YCSB': 1,
 }
 
 profile = 'free'
@@ -18,7 +18,7 @@ profile = 'free'
 # profile = 'instance'
 # profile = 'medium'
 
-enable_copperegg_monitoring = True
+enable_copperegg_monitoring = False
 
 
 # *********** EC2 Settings ***************
@@ -34,7 +34,7 @@ if profile == 'free':
     }
     ebs_disk_allocation = {
         'YCSB': 8,
-        'DB': 8,
+        'DB': 16,
         'DB_MAN': 8
     }
     ami = {

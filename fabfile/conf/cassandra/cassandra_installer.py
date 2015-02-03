@@ -60,7 +60,6 @@ def make_substitutions(base, yaml):
                 line = line.replace('listen_address: localhost', 'listen_address: %s' % host_internal_ip)
                 line = line.replace('# broadcast_rpc_address: 1.2.3.4', 'broadcast_rpc_address: %s' % host_internal_ip)
                 if use_instance_store:
-
                     line = line.replace('commitlog_directory: /var/lib/cassandra/commitlog',
                                         'commitlog_directory: %s' % _commit_log_dir)
 
@@ -104,8 +103,8 @@ def install():
     print 'Installing Cassandra on hosts: %s' % addresses()['db_public_ip']
 
     execute(  # install in parallel
-              _install,
-              hosts=addresses()['db_public_ip']
+        _install,
+        hosts=addresses()['db_public_ip']
     )
     execute(
         _configure,

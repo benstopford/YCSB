@@ -57,7 +57,7 @@ public class TerminatorThread extends Thread {
                 try {
                     t.join(waitTimeOutInMS);
                     if (t.isAlive()) {
-                        System.err.println("Thread-" + t.getName() + " still working. Call Thread.stop()");
+                        System.out.println("Thread-" + t.getName() + " still working. Call Thread.stop()");
                         t.stop();
                     }
                 } catch (InterruptedException e) {

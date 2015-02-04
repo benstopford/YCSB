@@ -1,0 +1,105 @@
+YCSB Client 0.1
+Command line: -db com.yahoo.ycsb.db.MongoDbClient -s -P /opt/ycsb/workloads/workloada -p timeseries.granularity=100 -p readretrycount=1000 -p ignoreinserterrors=true -p insertcount=1000 -p fieldlength=100 -p cardinality=100 -p reconnectiontime=1000 -p mongodb.writeConcern=normal -p mongodb.readPreference=primaryPreferred -p operationcount=100000000 -p recordcount=1000 -p fieldcount=30 -p threadcount=1 -p maxexecutiontime=60 -p mongodb.database=ycsb -p exportmeasurementsinterval=30000 -p workload=com.yahoo.ycsb.workloads.CoreWorkload -p updateretrycount=1000 -p measurementtype=timeseries -p mongodb.url=172.31.3.36:27028 -p insertretrycount=10 -p fieldlengthdistribution=constant -t
+Using fieldlengthgenerator:com.yahoo.ycsb.generator.ConstantIntegerGenerator
+new database url = 172.31.3.36:27028/ycsb
+mongo connection created with 172.31.3.36:27028/ycsb
+Warmup execution time: 0
+Warmup operations: 0
+new database url = 172.31.3.36:27028/ycsb
+mongo connection created with 172.31.3.36:27028/ycsb
+ 0 sec: 0 operations; 
+ 2 sec: 3 operations; 1.5 current ops/sec; [UPDATE AverageLatency(us)=38012] [READ AverageLatency(us)=1700513] 
+ 4 sec: 6 operations; 1.5 current ops/sec; [UPDATE AverageLatency(us)=1238] [READ AverageLatency(us)=878810] 
+ 6 sec: 9 operations; 1.5 current ops/sec;  [READ AverageLatency(us)=795420] 
+ 8 sec: 15 operations; 3 current ops/sec; [UPDATE AverageLatency(us)=1451.67] [READ AverageLatency(us)=634509] 
+ 10 sec: 21 operations; 3 current ops/sec; [UPDATE AverageLatency(us)=929] [READ AverageLatency(us)=601132.33] 
+ 12 sec: 28 operations; 3.5 current ops/sec; [UPDATE AverageLatency(us)=1854] [READ AverageLatency(us)=514882.25] 
+ 14 sec: 36 operations; 4 current ops/sec; [UPDATE AverageLatency(us)=746.75] [READ AverageLatency(us)=481805.5] 
+ 16 sec: 49 operations; 6.5 current ops/sec; [UPDATE AverageLatency(us)=726.38] [READ AverageLatency(us)=468086.2] 
+ 18 sec: 55 operations; 3 current ops/sec; [UPDATE AverageLatency(us)=874.5] [READ AverageLatency(us)=468164.25] 
+ 20 sec: 72 operations; 8.5 current ops/sec; [UPDATE AverageLatency(us)=721.38] [READ AverageLatency(us)=496932.75] 
+ 22 sec: 79 operations; 3.5 current ops/sec; [UPDATE AverageLatency(us)=1243.67] [READ AverageLatency(us)=511461.5] 
+ 24 sec: 85 operations; 3 current ops/sec; [UPDATE AverageLatency(us)=845.5] [READ AverageLatency(us)=486476.5] 
+ 26 sec: 90 operations; 2.5 current ops/sec; [UPDATE AverageLatency(us)=878] [READ AverageLatency(us)=491074] 
+ 28 sec: 95 operations; 2.5 current ops/sec; [UPDATE AverageLatency(us)=1012] [READ AverageLatency(us)=471765.25] 
+[UPDATE], 0, 38012.0, 20.0
+[UPDATE], 2600, 1238.0, 10.0
+[UPDATE], 6400, 1451.6666666666667, 30.0
+[UPDATE], 9000, 929.0, 30.0
+[UPDATE], 10000, 2320.5, 20.0
+[UPDATE], 10600, 921.0, 10.0
+[UPDATE], 13000, 717.6666666666666, 30.0
+[UPDATE], 13500, 834.0, 10.0
+[UPDATE], 14000, 868.0, 10.0
+[UPDATE], 14900, 764.0, 20.0
+[UPDATE], 15400, 683.0, 50.0
+[UPDATE], 17300, 868.0, 10.0
+[UPDATE], 17700, 881.0, 10.0
+[UPDATE], 18700, 874.0, 10.0
+[UPDATE], 19700, 708.6666666666666, 120.0
+[UPDATE], 20200, 847.0, 10.0
+[UPDATE], 20800, 1442.0, 20.0
+[UPDATE], 23200, 845.5, 20.0
+[UPDATE], 24700, 878.0, 10.0
+[UPDATE], 26200, 1012.0, 10.0
+[UPDATE], 28100, 760.0, 20.0
+[UPDATE], 28500, 849.0, 10.0
+[UPDATE], 29000, 810.0, 10.0
+[READ], 0, 1700513.0, 10.0
+[READ], 900, 922168.0, 10.0
+[READ], 1700, 835452.0, 10.0
+[READ], 2500, 827992.0, 10.0
+[READ], 3300, 807333.0, 10.0
+[READ], 4100, 750935.0, 10.0
+[READ], 4700, 628276.0, 10.0
+[READ], 5400, 650109.0, 10.0
+[READ], 6000, 625142.0, 10.0
+[READ], 6700, 662013.0, 10.0
+[READ], 7300, 609369.0, 10.0
+[READ], 7800, 532015.0, 10.0
+[READ], 8300, 510308.0, 10.0
+[READ], 8800, 521635.0, 10.0
+[READ], 9400, 504843.0, 10.0
+[READ], 9900, 522743.0, 10.0
+[READ], 10400, 496059.0, 10.0
+[READ], 10900, 496069.0, 10.0
+[READ], 11300, 470603.0, 10.0
+[READ], 11800, 464491.0, 10.0
+[READ], 12300, 465182.0, 10.0
+[READ], 12800, 478009.0, 10.0
+[READ], 13200, 465073.0, 10.0
+[READ], 13700, 458583.0, 10.0
+[READ], 14200, 473584.0, 10.0
+[READ], 14600, 466151.0, 10.0
+[READ], 15100, 465719.0, 10.0
+[READ], 15500, 462616.0, 10.0
+[READ], 16000, 478171.0, 10.0
+[READ], 16500, 512128.0, 10.0
+[READ], 17000, 489059.0, 10.0
+[READ], 17500, 489588.0, 10.0
+[READ], 18000, 496956.0, 10.0
+[READ], 18500, 514974.0, 10.0
+[READ], 19100, 519934.0, 10.0
+[READ], 19600, 496626.0, 10.0
+[READ], 20100, 514312.0, 10.0
+[READ], 20600, 474721.0, 10.0
+[READ], 21000, 480898.0, 10.0
+[READ], 21500, 498300.0, 10.0
+[READ], 22000, 491987.0, 10.0
+[READ], 22500, 494142.0, 10.0
+[READ], 23000, 492897.0, 10.0
+[READ], 23500, 498012.0, 10.0
+[READ], 24000, 479245.0, 10.0
+[READ], 24500, 466935.0, 10.0
+[READ], 24900, 475976.0, 10.0
+[READ], 25400, 462269.0, 10.0
+[READ], 25900, 481881.0, 10.0
+[READ], 26400, 475490.0, 10.0
+[READ], 26800, 467687.0, 10.0
+[READ], 27300, 484830.0, 10.0
+ 30 sec: 104 operations; 4.5 current ops/sec; [UPDATE AverageLatency(us)=798.8] [READ AverageLatency(us)=472893.5] 
+ 32 sec: 111 operations; 3.5 current ops/sec; [UPDATE AverageLatency(us)=756] [READ AverageLatency(us)=504535.5] 
+ 34 sec: 120 operations; 4.5 current ops/sec; [UPDATE AverageLatency(us)=804.75] [READ AverageLatency(us)=464129.6] 
+ 36 sec: 128 operations; 4 current ops/sec; [UPDATE AverageLatency(us)=762] [READ AverageLatency(us)=487659.75] 
+ 38 sec: 134 operations; 3 current ops/sec; [UPDATE AverageLatency(us)=834] [READ AverageLatency(us)=470620.25] 
+ 40 sec: 146 operations; 6 current ops/sec; [UPDATE AverageLatency(us)=753] [READ AverageLatency(us)=470966.75] 

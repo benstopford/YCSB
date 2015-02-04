@@ -1,0 +1,228 @@
+YCSB Client 0.1
+Command line: -db com.yahoo.ycsb.db.CassandraCQLClient -s -p workload=com.yahoo.ycsb.workloads.CoreWorkload -p updateretrycount=1000 -p recordcount=10000 -p cassandra.readconsistencylevel=ONE -p exportmeasurementsinterval=30000 -p fieldcount=10 -p timeseries.granularity=100 -p threadcount=10 -p insertretrycount=10 -p readretrycount=1000 -p ignoreinserterrors=false -p reconnectionthroughput=10 -p hosts=54.171.209.23,54.171.213.53,54.171.105.34 -p operationcount=1666 -p maxexecutiontime=2400 -p cassandra.writeconsistencylevel=ONE -p measurementtype=timeseries -p reconnectiontime=1000 -p fieldlength=10 -p insertstart=8330 -p insertcount=1666 -load
+ 0 sec: 0 operations; 
+ 2 sec: 0 operations; 
+ 4 sec: 0 operations; 
+ 6 sec: 0 operations; 
+Connected to cluster: datalabs-cassandra
+Datacenter: eu-west; Host: /172.31.27.105; Rack: 1b
+Datacenter: eu-west; Host: /172.31.27.106; Rack: 1b
+Datacenter: eu-west; Host: /54.171.105.34; Rack: 1b
+Connected to cluster: datalabs-cassandra
+Datacenter: eu-west; Host: /172.31.27.105; Rack: 1b
+Datacenter: eu-west; Host: /172.31.27.106; Rack: 1b
+Datacenter: eu-west; Host: /54.171.105.34; Rack: 1b
+Connected to cluster: datalabs-cassandra
+Datacenter: eu-west; Host: /172.31.27.106; Rack: 1b
+Datacenter: eu-west; Host: /54.171.105.34; Rack: 1b
+Datacenter: eu-west; Host: /172.31.27.105; Rack: 1b
+Connected to cluster: datalabs-cassandra
+Datacenter: eu-west; Host: /172.31.27.105; Rack: 1b
+Datacenter: eu-west; Host: /172.31.27.106; Rack: 1b
+Datacenter: eu-west; Host: /54.171.105.34; Rack: 1b
+Connected to cluster: datalabs-cassandra
+Datacenter: eu-west; Host: /172.31.27.105; Rack: 1b
+Datacenter: eu-west; Host: /54.171.105.34; Rack: 1b
+Datacenter: eu-west; Host: /172.31.27.106; Rack: 1b
+Connected to cluster: datalabs-cassandra
+Datacenter: eu-west; Host: /172.31.27.106; Rack: 1b
+Datacenter: eu-west; Host: /172.31.27.105; Rack: 1b
+Datacenter: eu-west; Host: /54.171.105.34; Rack: 1b
+Connected to cluster: datalabs-cassandra
+Datacenter: eu-west; Host: /172.31.27.105; Rack: 1b
+Datacenter: eu-west; Host: /172.31.27.106; Rack: 1b
+Datacenter: eu-west; Host: /54.171.105.34; Rack: 1b
+Connected to cluster: datalabs-cassandra
+Datacenter: eu-west; Host: /172.31.27.106; Rack: 1b
+Datacenter: eu-west; Host: /172.31.27.105; Rack: 1b
+Datacenter: eu-west; Host: /54.171.105.34; Rack: 1b
+Connected to cluster: datalabs-cassandra
+Datacenter: eu-west; Host: /172.31.27.105; Rack: 1b
+Datacenter: eu-west; Host: /54.171.105.34; Rack: 1b
+Datacenter: eu-west; Host: /172.31.27.106; Rack: 1b
+Connected to cluster: datalabs-cassandra
+Datacenter: eu-west; Host: /172.31.27.105; Rack: 1b
+Datacenter: eu-west; Host: /54.171.105.34; Rack: 1b
+Datacenter: eu-west; Host: /172.31.27.106; Rack: 1b
+ 8 sec: 0 operations; 
+created keyspace ycsb
+created keyspace ycsb
+Executed create table if not exists ycsb.usertable (
+     y_id varchar primary key,
+      field0 blob,
+      field1 blob,
+      field2 blob,
+      field3 blob,
+      field4 blob,
+      field5 blob,
+      field6 blob,
+      field7 blob,
+      field8 blob,
+      field9 blob);
+created keyspace ycsb
+Executed create table if not exists ycsb.usertable (
+     y_id varchar primary key,
+      field0 blob,
+      field1 blob,
+      field2 blob,
+      field3 blob,
+      field4 blob,
+      field5 blob,
+      field6 blob,
+      field7 blob,
+      field8 blob,
+      field9 blob);
+ 10 sec: 0 operations; 
+created keyspace ycsb
+created keyspace ycsb
+Executed create table if not exists ycsb.usertable (
+     y_id varchar primary key,
+      field0 blob,
+      field1 blob,
+      field2 blob,
+      field3 blob,
+      field4 blob,
+      field5 blob,
+      field6 blob,
+      field7 blob,
+      field8 blob,
+      field9 blob);
+created keyspace ycsb
+Executed create table if not exists ycsb.usertable (
+     y_id varchar primary key,
+      field0 blob,
+      field1 blob,
+      field2 blob,
+      field3 blob,
+      field4 blob,
+      field5 blob,
+      field6 blob,
+      field7 blob,
+      field8 blob,
+      field9 blob);
+ 12 sec: 0 operations; 
+created keyspace ycsb
+Executed create table if not exists ycsb.usertable (
+     y_id varchar primary key,
+      field0 blob,
+      field1 blob,
+      field2 blob,
+      field3 blob,
+      field4 blob,
+      field5 blob,
+      field6 blob,
+      field7 blob,
+      field8 blob,
+      field9 blob);
+created keyspace ycsb
+created keyspace ycsb
+created keyspace ycsb
+Executed create table if not exists ycsb.usertable (
+     y_id varchar primary key,
+      field0 blob,
+      field1 blob,
+      field2 blob,
+      field3 blob,
+      field4 blob,
+      field5 blob,
+      field6 blob,
+      field7 blob,
+      field8 blob,
+      field9 blob);
+Executed create table if not exists ycsb.usertable (
+     y_id varchar primary key,
+      field0 blob,
+      field1 blob,
+      field2 blob,
+      field3 blob,
+      field4 blob,
+      field5 blob,
+      field6 blob,
+      field7 blob,
+      field8 blob,
+      field9 blob);
+Executed create table if not exists ycsb.usertable (
+     y_id varchar primary key,
+      field0 blob,
+      field1 blob,
+      field2 blob,
+      field3 blob,
+      field4 blob,
+      field5 blob,
+      field6 blob,
+      field7 blob,
+      field8 blob,
+      field9 blob);
+ 14 sec: 0 operations; 
+ 16 sec: 0 operations; 
+ 18 sec: 0 operations; 
+ 20 sec: 354 operations; 177 current ops/sec;  
+ 22 sec: 959 operations; 302.35 current ops/sec;  
+ 23 sec: 1328 operations; 268.17 current ops/sec;   
+[INSERT], 0, 9356.0, 10.0
+[INSERT], 100, 11973.833333333334, 240.0
+[INSERT], 200, 5657.421052631579, 190.0
+[INSERT], 300, 25757.75, 320.0
+[INSERT], 400, 42079.0, 40.0
+[INSERT], 500, 34615.48275862069, 290.0
+[INSERT], 600, 16839.605263157893, 380.0
+[INSERT], 700, 21832.791666666668, 480.0
+[INSERT], 800, 8636.93023255814, 430.0
+[INSERT], 900, 22723.30188679245, 530.0
+[INSERT], 1000, 19356.25, 360.0
+[INSERT], 1100, 17657.21052631579, 190.0
+[INSERT], 1200, 28693.347826086956, 460.0
+[INSERT], 1300, 13047.766666666666, 300.0
+[INSERT], 1400, 44698.041666666664, 240.0
+[INSERT], 1500, 18576.945945945947, 370.0
+[INSERT], 1600, 22872.897435897437, 390.0
+[INSERT], 1700, 16475.483870967742, 310.0
+[INSERT], 1800, 29121.365853658535, 410.0
+[INSERT], 1900, 30920.615384615383, 130.0
+[INSERT], 2000, 33391.545454545456, 330.0
+[INSERT], 2100, 26437.105263157893, 190.0
+[INSERT], 2200, 27746.727272727272, 330.0
+[INSERT], 2300, 8714.604166666666, 480.0
+[INSERT], 2400, 47872.260869565216, 230.0
+[INSERT], 2500, 34178.666666666664, 210.0
+[INSERT], 2600, 76596.11111111111, 180.0
+[INSERT], 2700, 15981.589743589744, 390.0
+[INSERT], 2800, 20955.696969696968, 330.0
+[INSERT], 2900, 34247.36842105263, 190.0
+[INSERT], 3000, 31515.558823529413, 340.0
+[INSERT], 3100, 19834.5, 300.0
+[INSERT], 3200, 30248.342857142856, 350.0
+[INSERT], 3300, 28420.380952380954, 210.0
+[INSERT], 3400, 18747.244444444445, 450.0
+[INSERT], 3500, 22684.185185185186, 270.0
+[INSERT], 3600, 19154.526315789473, 190.0
+[INSERT], 3800, 41618.692307692305, 390.0
+[INSERT], 3900, 12501.47619047619, 420.0
+[INSERT], 4000, 48324.181818181816, 110.0
+[INSERT], 4100, 14700.065217391304, 460.0
+[INSERT], 4200, 26138.263157894737, 190.0
+[INSERT], 4300, 16959.290322580644, 310.0
+[INSERT], 4400, 20145.947368421053, 190.0
+[CLEANUP], 0, 2.0, 10.0
+[CLEANUP], 300, 0.0, 10.0
+[CLEANUP], 800, 0.0, 10.0
+[CLEANUP], 1000, 0.0, 10.0
+[CLEANUP], 1100, 0.0, 30.0
+[INSERT], 4500, 15069.29411764706, 170.0
+[INSERT], Operations, 1328
+[INSERT], Retries, 0
+[INSERT], AverageLatency(us), 23665.156626506025
+[INSERT], MinLatency(us), 1620
+[INSERT], MaxLatency(us), 254621
+[INSERT], Return=0, 1328
+[CLEANUP], 1200, 0.0, 10.0
+[CLEANUP], Operations, 8
+[CLEANUP], Retries, 0
+[CLEANUP], AverageLatency(us), 0.25
+[CLEANUP], MinLatency(us), 0
+[CLEANUP], MaxLatency(us), 2
+[OVERALL], Reconnections, 0.0
+[OVERALL], RunTime(ms), 4477.0
+[OVERALL], Operations, 1328.0
+[OVERALL], Throughput(ops/sec), 296.6272057181148
+java -cp /home/ubuntu/ycsb/guava-17.0.jar:/opt/ycsb/core/lib/core-0.1.4.jar:/opt/ycsb/cassandra-binding/lib/cassandra-binding-0.1.4.jar com.yahoo.ycsb.Client -db com.yahoo.ycsb.db.CassandraCQLClient -s -p workload=com.yahoo.ycsb.workloads.CoreWorkload -p updateretrycount=1000 -p recordcount=10000 -p cassandra.readconsistencylevel=ONE -p exportmeasurementsinterval=30000 -p fieldcount=10 -p timeseries.granularity=100 -p threadcount=10 -p insertretrycount=10 -p readretrycount=1000 -p ignoreinserterrors=false -p reconnectionthroughput=10 -p hosts=54.171.209.23,54.171.213.53,54.171.105.34 -p operationcount=1666 -p maxexecutiontime=2400 -p cassandra.writeconsistencylevel=ONE -p measurementtype=timeseries -p reconnectiontime=1000 -p fieldlength=10 -p insertstart=8330 -p insertcount=1666 -load

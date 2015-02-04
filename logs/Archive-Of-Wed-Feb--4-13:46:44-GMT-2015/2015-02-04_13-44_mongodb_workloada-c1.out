@@ -1,0 +1,19 @@
+YCSB Client 0.1
+Command line: -db com.yahoo.ycsb.db.MongoDbClient -s -P /opt/ycsb/workloads/workloada -p timeseries.granularity=100 -p readretrycount=1000 -p ignoreinserterrors=true -p insertcount=1000 -p fieldlength=100 -p cardinality=100 -p reconnectiontime=1000 -p mongodb.writeConcern=normal -p mongodb.readPreference=primaryPreferred -p operationcount=100000000 -p recordcount=1000 -p fieldcount=30 -p threadcount=1 -p maxexecutiontime=60 -p mongodb.database=ycsb -p exportmeasurementsinterval=30000 -p workload=com.yahoo.ycsb.workloads.CoreWorkload -p updateretrycount=1000 -p measurementtype=timeseries -p mongodb.url=172.31.3.36:27028 -p insertretrycount=10 -p fieldlengthdistribution=constant -t
+Using fieldlengthgenerator:com.yahoo.ycsb.generator.ConstantIntegerGenerator
+new database url = 172.31.3.36:27028/ycsb
+mongo connection created with 172.31.3.36:27028/ycsb
+Warmup execution time: 0
+Warmup operations: 0
+new database url = 172.31.3.36:27028/ycsb
+mongo connection created with 172.31.3.36:27028/ycsb
+ 0 sec: 0 operations; 
+ 2 sec: 4 operations; 2 current ops/sec; [UPDATE AverageLatency(us)=27350.67] [READ AverageLatency(us)=1775245] 
+ 4 sec: 9 operations; 2.5 current ops/sec; [UPDATE AverageLatency(us)=847.67] [READ AverageLatency(us)=894306.5] 
+ 6 sec: 18 operations; 4.5 current ops/sec; [UPDATE AverageLatency(us)=919.17] [READ AverageLatency(us)=743579] 
+ 8 sec: 22 operations; 2 current ops/sec; [UPDATE AverageLatency(us)=852] [READ AverageLatency(us)=618066.67] 
+ 10 sec: 29 operations; 3.5 current ops/sec; [UPDATE AverageLatency(us)=899.25] [READ AverageLatency(us)=602682.33] 
+ 12 sec: 36 operations; 3.5 current ops/sec; [UPDATE AverageLatency(us)=868] [READ AverageLatency(us)=486754] 
+ 14 sec: 51 operations; 7.5 current ops/sec; [UPDATE AverageLatency(us)=724.73] [READ AverageLatency(us)=483566.25] 
+ 16 sec: 60 operations; 4.5 current ops/sec; [UPDATE AverageLatency(us)=783.2] [READ AverageLatency(us)=509145] 
+ 18 sec: 73 operations; 6.5 current ops/sec; [UPDATE AverageLatency(us)=709.67] [READ AverageLatency(us)=476210.75] 

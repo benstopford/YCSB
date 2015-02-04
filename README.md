@@ -1,6 +1,6 @@
 ###[Work in progress]
 
-This is a port of YCSB (see full description of YCSB here: https://github.com/brianfrankcooper/YCSB/) which builds on the Thumbtack version to include automating the DB provisioning and installation using EC2.
+This is a fork of YCSB (see full description of YCSB here: https://github.com/brianfrankcooper/YCSB/) which builds on the Thumbtack version to include automating the DB provisioning and installation using EC2.
 
 This version is a prototype, still under development. Windows in not supported as a client OS.
 

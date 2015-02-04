@@ -2,8 +2,6 @@
 
 This is a fork of YCSB (see full description of YCSB here: https://github.com/brianfrankcooper/YCSB/) which builds on the Thumbtack version to include automating the DB provisioning and installation using EC2.
 
-This version is a prototype, still under development. Windows in not supported as a client OS.
-
 By default it uses AWS's free tier (good for getting going) but it is best to use larger instances for real tests.
 
 As an example (once installed) you could run the following commands to test the throughput limit of say Cassandra for a particular number of VMs:

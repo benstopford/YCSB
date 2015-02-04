@@ -14,7 +14,7 @@ As an example (once installed) you could run the following commands to test the 
 - fab ycsb_load                  #Use YCSB to load a dataset (defined by paratmeters set in fabfile/conf/workloads.py)
 - fab threads_w:cassandra        #Run a workload with an increasing number of threads until throughput saturates
 
-repeat again replacing 'cassandra' with 'mongodb'
+repeat again replacing 'cassandra' with 'mongodb'. **Only Mongodb & Cassandra are currently supported**
 
 Longer more complex experiments are also supported such as increasing the number of nodes incrementally or increasing the amount of data in the database between runs. These can take a long time to run. They automatically produce graphs.
 

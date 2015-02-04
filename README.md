@@ -47,17 +47,26 @@ Supported commands (run via: 'fab command <args>' from the YCSB root dir):
 - grow_nodes
 - grow_data
 
-**Instalation**
+**Setup**
 
-- sudo apt-get install fabric
-- sudo pip install pytx
-- sudo apt-get install python-pandas
-- sudo pip install awscli
-- aws configure (add your public/private key and leave the format as 'text')
-- place your ec2 .pem file in the YCSB directory
-- alter the file: fabfile/conf/hosts.py
+* This install currently only works for bash compatible systems as it uses the EC2 command line api (needs porting to the python one)
+
+* Create an amazon AWS Account. Create this and create yourself a .pem file which will provide your private key
+    - aws configure (add your public/private key and leave the format as 'text')
+    - place your ec2 .pem file in the YCSB directory
+
+* Install the EC2 CLI (note this is the new one) http://docs.aws.amazon.com/cli/latest/userguide/installing.html
+    - sudo pip install awscli
+
+* Edit fabric/conf/hosts.py to include the path to your .pem file
     - key_name = keyfile_name_without_dot_pem_at_end
     - security_group = yoursecuritygroupname
+    
+* Install python dependencies:
+    - sudo apt-get install fabric
+    - sudo pip install pytx
+    - sudo apt-get install python-pandas
 
+* Alter the values in fabfile/conf/hosts.py and fabfile/conf/workloads.py to suit your test configureations. 
 
-As a final note, I used Fabric as I wanted to stick with the path already trodden by Thumbtack. If I were to work on this further I would probably not choose that framework. Saltstack or Ansible would be preferable.
+As a final note, this project uses Fabric so as to make better use of the existing Thumbtack code. Saltstack or Ansible would probably however be preferable.

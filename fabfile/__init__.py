@@ -17,9 +17,10 @@ from ycsb import kill                   as ycsb_kill
 from ycsb import clean_logs             as ycsb_clean
 from ycsb import _intialise_tables       as ycsb_inittables
 
-from experiments import data_growth as data
-from experiments import find_max_load_throughput as threads_l
-from experiments import find_max_workload_throughput as threads_w
-from experiments import node_growth as node
-from experiments import sequential_workloads as workloads
+from experiments import data_growth as grow_data
+from experiments import find_max_load_throughput as max_load_throughput
+from experiments import find_max_workload_throughput as max_workload_throughput
+from experiments import node_growth as grow_nodes
+from experiments import sequential_workloads as seq_workloads
+
 from experiment_util import tail as tail

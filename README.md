@@ -1,54 +1,72 @@
-Yahoo! Cloud System Benchmark (YCSB)
-====================================
-   dd
-A note on comparing multiple systems
-------------------------------------
+###[Work in progress]
 
-NoSQL systems have widely varying defaults for trading off write durability vs performance.  Make sure that you are [comparing apples to apples across all candidates](http://www.datastax.com/dev/blog/how-not-to-benchmark-cassandra-a-case-study).  The most useful common denominator is synchronously durable writes.  The following YCSB clients have been verified to perform synchronously durable writes by default:
+This is a port of YCSB (see full description of YCSB here: https://github.com/brianfrankcooper/YCSB/) which builds
+on the Thumbtack version to include automating the DB provisioning and installation using EC2.
 
-- Couchbase
-- HBase
-- MongoDB
+This version is a prototype, still under development. Windows in not supported as a client OS.
 
-Cassandra requires a configuration change in conf/cassandra.yaml.  Uncomment these lines:
+By default it uses AWS's free tier (good for getting going) but it is best to use larger instances for real tests.
 
-    # commitlog_sync: batch
-    # commitlog_sync_batch_window_in_ms: 50
+As an example (once installed) you could run the following commands to test the throughput limit of say Cassandra
+for a particular number of VMs:
 
-Links
------
-http://wiki.github.com/jbellis/YCSB/  
-http://research.yahoo.com/Web_Information_Management/YCSB/  
-ycsb-users@yahoogroups.com  
+- fab ec2_up:cassandra           #Provision 2 VMs (hosts defined in fabfile/conf/hosts.py)
+- fab db_up:cassandra            #Install cassandra on these VMs
+- fab ycsb_deploy                #Deploy YCSB
+- fab ycsb_load                  #Use YCSB to load a dataset (defined by paratmeters set in fabfile/conf/workloads.py)
+- fab threads_w:cassandra        #Run a workload with an increasing number of threads until throughput saturates
 
-Getting Started
----------------
+repeat again replacing 'cassandra' with 'mongodb'
 
-1. Download the latest release of YCSB:
+Longer more complex experiments are also supported such as increasing the number of nodes incrementally or
+increasing the amount of data in the database between runs. These can take a long time to run. They automatically
+produce graphs.
 
-    ```sh
-    wget https://github.com/downloads/jbellis/YCSB/ycsb-0.1.4.tar.gz
-    tar xfvz ycsb-0.1.4
-    cd ycsb-0.1.4
-    ```
-    
-2. Set up a database to benchmark. There is a README file under each binding 
-   directory.
+Supported commands:
 
-3. Run YCSB command. 
-    
-    ```sh
-    bin/ycsb load basic -P workloads/workloada
-    bin/ycsb run basic -P workloads/workloada
-    ```
+**EC2**
 
-  Running the `ycsb` command without any argument will print the usage. 
-   
-  See https://github.com/brianfrankcooper/YCSB/wiki/Running-a-Workload
-  for a detailed documentation on how to run a workload.
+- ec2_up
+- ec2_down
+- ec2_status
+- db_up
+- db_down
 
-  See https://github.com/brianfrankcooper/YCSB/wiki/Core-Properties for 
-  the list of available workload properties.
+**YCSB**
 
-  Alternatively, see fabric/README for Thumbtack's work on parallelizing
-  YCSB clients using Fabric.
+- ycsb_load
+- ycsb_run
+- ycsb_status
+- ycsb_get
+- ycsb_deploy
+- ycsb_kill
+- ycsb_clean
+- ycsb_inittables
+
+**Experiments**
+
+- max_load_throughput
+- max_workload_throughput
+- seq_workloads
+- grow_nodes
+- grow_data
+
+**Instalation**
+
+ sudo apt-get install fabric
+ sudo pip install pytx
+ sudo apt-get install python-pandas
+
+sudo pip install awscli
+
+aws configure (add your public/private key and leave the format as 'text')
+
+place your ec2 .pem file in the YCSB directory
+
+alter the file: fabfile/conf/hosts.py
+    key_name = keyfile_name_without_dot_pem_at_end
+    security_group = yoursecuritygroupname
+
+
+As a final note, I used Fabric as I wanted to stick with the path already trodden by Thumbtack. If I were to work
+on this further I would probably not choose that framework. Saltstack or Ansible would be preferable.

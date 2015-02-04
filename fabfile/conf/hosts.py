@@ -3,25 +3,36 @@ from fabfile.amazonctl.amazon_ip import get_internal_ips, get_external_ips
 from fabfile.util.print_utils import log
 import pytz
 
-_amz_linux_ebs_backed_para = 'ami-6e7bd919'
-_amz_linux_instance_store_para = 'ami-0318e374'
-_amz_linux_instance_store_hvm = 'ami-0f21df78'
+#***********************************************
+# *********** MAIN HOST SETTINGS ***************
+#***********************************************
 
-# *********** General Settings ***************
+# *********** Set the number of VMs you want to spin up ***************
 host_counts = {
-    'DB': 1,
-    'YCSB': 1,
+    'DB': 2,
+    'YCSB': 2,
 }
 
+# *********** Set the machine type ***************
 profile = 'free'
 # profile = 'small'
 # profile = 'instance'
 # profile = 'medium'
 
+# *********** Copperegg provides a free trial, just sign up ***************
 enable_copperegg_monitoring = False
 
 
+
+
+#*******************************************
+# *********** OTHER SETTINGS ***************
+#*******************************************
+
 # *********** EC2 Settings ***************
+_amz_linux_ebs_backed_para = 'ami-6e7bd919'
+_amz_linux_instance_store_para = 'ami-0318e374'
+_amz_linux_instance_store_hvm = 'ami-0f21df78'
 
 # For testing use the smallest instances (which require EBS storage)
 

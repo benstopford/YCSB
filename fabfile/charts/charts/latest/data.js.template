@@ -1,0 +1,7 @@
+var data2 = {
+    bindto: '#chart',
+    data: {
+       #data#
+    },
+    axis: {x:{min:0,  label:'#xlegend#'},  y: { min: 0 ,label:'#ylegend#' } }
+}

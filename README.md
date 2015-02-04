@@ -18,7 +18,7 @@ repeat again replacing 'cassandra' with 'mongodb'
 
 Longer more complex experiments are also supported such as increasing the number of nodes incrementally or increasing the amount of data in the database between runs. These can take a long time to run. They automatically produce graphs.
 
-Supported commands:
+Supported commands (run via: 'fab command <args>' from the YCSB root dir):
 
 **EC2**
 
@@ -49,19 +49,15 @@ Supported commands:
 
 **Instalation**
 
- sudo apt-get install fabric
- sudo pip install pytx
- sudo apt-get install python-pandas
-
-sudo pip install awscli
-
-aws configure (add your public/private key and leave the format as 'text')
-
-place your ec2 .pem file in the YCSB directory
-
-alter the file: fabfile/conf/hosts.py
-    key_name = keyfile_name_without_dot_pem_at_end
-    security_group = yoursecuritygroupname
+- sudo apt-get install fabric
+- sudo pip install pytx
+- sudo apt-get install python-pandas
+- sudo pip install awscli
+- aws configure (add your public/private key and leave the format as 'text')
+- place your ec2 .pem file in the YCSB directory
+- alter the file: fabfile/conf/hosts.py
+    - key_name = keyfile_name_without_dot_pem_at_end
+    - security_group = yoursecuritygroupname
 
 
 As a final note, I used Fabric as I wanted to stick with the path already trodden by Thumbtack. If I were to work on this further I would probably not choose that framework. Saltstack or Ansible would be preferable.

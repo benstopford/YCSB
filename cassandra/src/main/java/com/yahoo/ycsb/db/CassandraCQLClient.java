@@ -101,39 +101,6 @@ public class CassandraCQLClient extends DBPlus {
         return 0;
     }
 
-    @Override
-    public int insertBatch(String table, Map<String, HashMap<String, ByteIterator>> batch) {
-        try {
-            List<ResultSetFuture> futures = new ArrayList<ResultSetFuture>();
-            for (String key : batch.keySet()) {
-                HashMap<String, ByteIterator> values = batch.get(key);
-
-                Object[] vals = new Object[values.size() + 1];
-                vals[0] = key;
-                int i = 1;
-                for (Map.Entry<String, ByteIterator> entry : values.entrySet()) {
-                    vals[i++] = ByteBuffer.wrap(entry.getValue().toArray());
-                }
-
-                BoundStatement bs = (values.size() == 1 ? updateStatements.get(values.keySet().iterator().next()) : insertStatement).bind(vals);
-
-                if (_debug)
-                    System.out.println(bs.preparedStatement().getQueryString());
-
-                futures.add(session.executeAsync(bs));
-            }
-            for (ResultSetFuture f : futures) {
-                f.getUninterruptibly();
-            }
-            return OK;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return ERR;
-    }
-
-
     /**
      * Initialize any state for this DB. Called once per DB instance; there is
      * one DB instance per client thread.

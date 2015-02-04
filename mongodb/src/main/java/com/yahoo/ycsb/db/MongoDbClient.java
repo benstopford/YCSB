@@ -496,43 +496,6 @@ public class MongoDbClient extends DBPlus {
         return 0;
     }
 
-    @Override
-    public int insertBatch(String table, Map<String, HashMap<String, ByteIterator>> batch) {
-        com.mongodb.DB db = null;
-        try {
-            db = mongo.getDB(database);
-
-            db.requestStart();
-
-            DBCollection collection = db.getCollection(table);
-            List<DBObject> objects = new ArrayList<DBObject>();
-
-            for (String key : batch.keySet()) {
-                HashMap<String, ByteIterator> values = batch.get(key);
-                DBObject r = new BasicDBObject().append("_id", key);
-                for (String k : values.keySet()) {
-                    r.put(k, convert(values.get(k)));
-                }
-                objects.add(r);
-            }
-            WriteResult res = collection.insert(objects.toArray(new DBObject[]{}), writeConcern);
-            String error = res.getError();
-
-            if (error == null) {
-                return 0;
-            } else {
-                System.err.println(error);
-                return 1;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return 1;
-        } finally {
-            if (db != null) {
-                db.requestDone();
-            }
-        }
-    }
 
     @Override
     public int query(String table, String field, String searchTerm, List<String> keysThatMatched) {

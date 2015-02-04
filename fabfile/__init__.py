@@ -17,20 +17,9 @@ from ycsb import kill                   as ycsb_kill
 from ycsb import clean_logs             as ycsb_clean
 from ycsb import _intialise_tables       as ycsb_inittables
 
-from group_test import data_growth_test as data
-from group_test import find_optimum_threads_for_load as threads_l
-from group_test import find_optimum_threads_for_workload as threads_w
-from group_test import node_growth_test as node
-from group_test import simple_max_load_test_multi_workload as workloads
-
-
-from group_test import tail as tail
-
-
-
-
-from ycsb import test                   as ycsb_test
-from amazonctl.ec2 import test          as ec2_test
-from amazonctl.db import test           as db_test
-
-
+from experiments import data_growth as data
+from experiments import find_max_load_throughput as threads_l
+from experiments import find_max_workload_throughput as threads_w
+from experiments import node_growth as node
+from experiments import sequential_workloads as workloads
+from experiment_util import tail as tail

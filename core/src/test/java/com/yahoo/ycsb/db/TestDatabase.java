@@ -75,11 +75,6 @@ public class TestDatabase extends DBPlus {
     }
 
     @Override
-    public int insertBatch(String table, Map<String, HashMap<String, ByteIterator>> batch) {
-        return 0;
-    }
-
-    @Override
     public int query(String table, String field, String searchTerm, List<String> keysThatMatched) {
         querys.add(new String[]{
                 field, searchTerm

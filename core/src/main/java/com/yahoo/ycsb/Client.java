@@ -21,13 +21,8 @@ package com.yahoo.ycsb;
 import com.yahoo.ycsb.measurements.Measurements;
 import com.yahoo.ycsb.measurements.exporter.MeasurementsExporter;
 import com.yahoo.ycsb.measurements.exporter.TextMeasurementsExporter;
-import com.yahoo.ycsb.workloads.CoreWorkload;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Enumeration;
@@ -512,28 +507,7 @@ public class Client {
         return exporter;
     }
 
-    /**
-     * Exports the measurements to either sysout or a file using the exporter
-     * loaded from conf.
-     *
-     * @throws IOException Either failed to write to output stream or failed to close it.
-     */
-    private static void exportMeasurements(MeasurementsExporter exporter, int opcount, long runtime)
-            throws IOException {
-        try {
-            exporter.write("OVERALL", "RunTime(ms)", runtime);
-            double throughput = 1000.0 * ((double) opcount) / ((double) runtime);
-            exporter.write("OVERALL", "Throughput(ops/sec)", throughput);
-            exporter.write("OVERALL", "DataWritten(B)", MeasurementTracker.getConsumedBytes());
-            exporter.write("OVERALL", "TotalQueryResults", MeasurementTracker.getQueryResultCount());
 
-            Measurements.getMeasurements().exportMeasurements(exporter);
-        } finally {
-            if (exporter != null) {
-                exporter.close();
-            }
-        }
-    }
 
     public interface ExitHandler {
         void exit();
@@ -786,11 +760,6 @@ public class Client {
                 opcount = Integer.parseInt(props.getProperty(INSERT_COUNT_PROPERTY, "0"));
             } else {
                 opcount = Integer.parseInt(props.getProperty(RECORD_COUNT_PROPERTY, "0"));
-            }
-            if (props.containsKey(CoreWorkload.BULK_LOAD_OP_SIZE)) {
-                int batch = Integer.valueOf(props.getProperty(CoreWorkload.BULK_LOAD_OP_SIZE));
-                if (batch > 0)
-                    opcount = opcount / batch;
             }
         }
 

@@ -59,6 +59,11 @@ public class CoreWorkload extends Workload {
      */
     public static final String TABLENAME_PROPERTY_DEFAULT = "usertable";
 
+    public static final String VALUE_GENERATOR_PROPERTY = "valuegenerator";
+    private static final String VALUE_GENERATOR_PROPERTY_DEFALUT = "randombyte";
+    private static final String CARDINALITY = "cardinality";
+    private static final String CARDINALITY_DEFAULT = "-1";
+
     public static String table;
 
 
@@ -71,6 +76,7 @@ public class CoreWorkload extends Workload {
      * Default number of fields in a record.
      */
     public static final String FIELD_COUNT_PROPERTY_DEFAULT = "10";
+    private static CardinalityBasedFieldCreator cardinalityBasedFieldCreator;
 
     int fieldcount;
 
@@ -170,9 +176,29 @@ public class CoreWorkload extends Workload {
     public static final String SCAN_PROPORTION_PROPERTY = "scanproportion";
 
     /**
+     * The name of the property for the proportion of transactions that are queries.
+     */
+    public static final String QUERY_PROPORTION_PROPERTY = "queryproportion";
+
+    /**
+     * The name of the property for the proportion of transactions that are queries.
+     */
+    public static final String QUERY_FIELD_PROPERTY = "queryfield";
+
+    /**
+     * The name of the property for the proportion of transactions that are queries.
+     */
+    public static final String QUERY_FIELD_PROPERTY_DEFAULT = "field1";
+
+    /**
      * The default proportion of transactions that are scans.
      */
     public static final String SCAN_PROPORTION_PROPERTY_DEFAULT = "0.0";
+
+    /**
+     * The default proportion of transactions that are queries.
+     */
+    public static final String QUERY_PROPORTION_PROPERTY_DEFAULT = "0.0";
 
     /**
      * The name of the property for the proportion of transactions that are read-modify-write.
@@ -311,6 +337,16 @@ public class CoreWorkload extends Workload {
         } else {
             throw new WorkloadException("Unknown field length distribution \"" + fieldlengthdistribution + "\"");
         }
+        System.out.println("Using fieldlengthgenerator:" + fieldlengthgenerator.getClass().getName());
+
+        cardinality = Integer.valueOf(p.getProperty(CARDINALITY, CARDINALITY_DEFAULT));
+        String valuegenerator = p.getProperty(VALUE_GENERATOR_PROPERTY, VALUE_GENERATOR_PROPERTY_DEFALUT);
+        if ("queryable".equals(valuegenerator)) {
+            if (cardinality < 1) {
+                throw new RuntimeException("Illegal cardinality set for queryable field. Must be > 0");
+            }
+            cardinalityBasedFieldCreator = new CardinalityBasedFieldCreator(cardinality, fieldlength);
+        }
         return fieldlengthgenerator;
     }
 
@@ -332,14 +368,16 @@ public class CoreWorkload extends Workload {
         double updateproportion = Double.parseDouble(p.getProperty(UPDATE_PROPORTION_PROPERTY, UPDATE_PROPORTION_PROPERTY_DEFAULT));
         double insertproportion = Double.parseDouble(p.getProperty(INSERT_PROPORTION_PROPERTY, INSERT_PROPORTION_PROPERTY_DEFAULT));
         double scanproportion = Double.parseDouble(p.getProperty(SCAN_PROPORTION_PROPERTY, SCAN_PROPORTION_PROPERTY_DEFAULT));
+        double queryproportion = Double.parseDouble(p.getProperty(QUERY_PROPORTION_PROPERTY, QUERY_PROPORTION_PROPERTY_DEFAULT));
         double readmodifywriteproportion = Double.parseDouble(p.getProperty(READMODIFYWRITE_PROPORTION_PROPERTY, READMODIFYWRITE_PROPORTION_PROPERTY_DEFAULT));
-        recordcount = Integer.parseInt(p.getProperty(Client.RECORD_COUNT_PROPERTY));
+        recordcount = Long.parseLong(p.getProperty(Client.RECORD_COUNT_PROPERTY));
         String requestdistrib = p.getProperty(REQUEST_DISTRIBUTION_PROPERTY, REQUEST_DISTRIBUTION_PROPERTY_DEFAULT);
         int maxscanlength = Integer.parseInt(p.getProperty(MAX_SCAN_LENGTH_PROPERTY, MAX_SCAN_LENGTH_PROPERTY_DEFAULT));
         String scanlengthdistrib = p.getProperty(SCAN_LENGTH_DISTRIBUTION_PROPERTY, SCAN_LENGTH_DISTRIBUTION_PROPERTY_DEFAULT);
 
-        int insertstart = Integer.parseInt(p.getProperty(INSERT_START_PROPERTY, INSERT_START_PROPERTY_DEFAULT));
+        long insertstart = Long.parseLong(p.getProperty(INSERT_START_PROPERTY, INSERT_START_PROPERTY_DEFAULT));
 
+        queryField = p.getProperty(QUERY_FIELD_PROPERTY, QUERY_FIELD_PROPERTY_DEFAULT);
         readallfields = Boolean.parseBoolean(p.getProperty(READ_ALL_FIELDS_PROPERTY, READ_ALL_FIELDS_PROPERTY_DEFAULT));
         writeallfields = Boolean.parseBoolean(p.getProperty(WRITE_ALL_FIELDS_PROPERTY, WRITE_ALL_FIELDS_PROPERTY_DEFAULT));
         orderedinserts = !p.getProperty(INSERT_ORDER_PROPERTY, INSERT_ORDER_PROPERTY_DEFAULT).equals("hashed");
@@ -367,6 +405,10 @@ public class CoreWorkload extends Workload {
 
         if (readmodifywriteproportion > 0) {
             operationchooser.addValue(readmodifywriteproportion, "READMODIFYWRITE");
+        }
+
+        if (queryproportion > 0) {
+            operationchooser.addValue(queryproportion, "QUERY");
         }
 
         if (requestdistrib.compareTo("uniform") == 0) {
@@ -427,10 +469,19 @@ public class CoreWorkload extends Workload {
 
         for (int i = 0; i < fieldcount; i++) {
             String fieldkey = fieldnameprefix + i;
-            ByteIterator data = new RandomByteIterator(fieldlengthgenerator.nextInt());
+            ByteIterator data = getData();
             values.put(fieldkey, data);
         }
         return values;
+    }
+
+    private ByteIterator getData() {
+        if (cardinalityBasedFieldCreator == null) {
+            return new RandomByteIterator(fieldlengthgenerator.nextInt());
+        } else {
+            return cardinalityBasedFieldCreator.nextValue();
+        }
+
     }
 
     Map.Entry<String, ByteIterator> buildUpdate() {
@@ -448,7 +499,7 @@ public class CoreWorkload extends Workload {
      */
     public boolean doInsert(DB db, Object threadstate) {
         int result = -1;
-        int keynum = keynumGenerator.startInsert();
+        long keynum = keynumGenerator.startInsert();
         try {
             String dbkey = buildKeyName(keynum);
             HashMap<String, ByteIterator> values = buildValues();
@@ -484,11 +535,34 @@ public class CoreWorkload extends Workload {
             doTransactionInsert(db);
         } else if (op.compareTo("SCAN") == 0) {
             doTransactionScan(db);
+        } else if (op.compareTo("QUERY") == 0) {
+            doTransactionQuery(db);
         } else {
             doTransactionReadModifyWrite(db);
         }
 
         return true;
+    }
+
+    private void doTransactionQuery(DB db) {
+        DBPlus dbPlus = (DBPlus) db;
+        List<String> keysThatMatched = new ArrayList<String>();
+        checkArgs(db);
+
+        String value = cardinalityBasedFieldCreator.nextValue().toString();
+        dbPlus.query(table, queryField, value, keysThatMatched);
+        checkReturnResult(keysThatMatched, queryField);
+    }
+
+    private void checkReturnResult(List<String> keysThatMatched, String queryField) {
+        MeasurementTracker.incrementQueryResultCount(keysThatMatched.size());
+    }
+
+    private void checkArgs(DB db) {
+        if (!(db instanceof DBPlus))
+            throw new RuntimeException("This database is not configured to support queries in the YCSB adapter");
+        if (cardinalityBasedFieldCreator == null)
+            throw new RuntimeException("To run queries you must supply valuegenerator=queryable as well as cardinality=[some value greater than 0]");
     }
 
     @Override
@@ -497,8 +571,8 @@ public class CoreWorkload extends Workload {
         return true;
     }
 
-    int nextReadKeynum() {
-        int keynum;
+    long nextReadKeynum() {
+        long keynum;
         if (trackLatestInsertForReads) {
             // we need to make sure we only try to read keys that have already been written
             if (keychooser instanceof ExponentialGenerator) {
@@ -521,7 +595,7 @@ public class CoreWorkload extends Workload {
 
     public void doTransactionRead(DB db) {
         //choose a random key
-        int keynum = nextReadKeynum();
+        long keynum = nextReadKeynum();
 
         String keyname = buildKeyName(keynum);
 
@@ -536,7 +610,7 @@ public class CoreWorkload extends Workload {
 
     public void doTransactionReadModifyWrite(DB db) {
         //choose a random key
-        int keynum = nextReadKeynum();
+        long keynum = nextReadKeynum();
         String keyname = buildKeyName(keynum);
 
         //do the transaction
@@ -569,12 +643,12 @@ public class CoreWorkload extends Workload {
 
     public void doTransactionScan(DB db) {
         //choose a random key
-        int keynum = nextReadKeynum();
+        long keynum = nextReadKeynum();
 
         String startkeyname = buildKeyName(keynum);
 
         //choose a random scan length
-        int len = scanlength.nextInt();
+        int len = (int) scanlength.nextInt();
 
         if (!readallfields) {
             //read a random field
@@ -587,7 +661,7 @@ public class CoreWorkload extends Workload {
 
     public void doTransactionUpdate(DB db) {
         //choose a random key
-        int keynum = nextReadKeynum();
+        long keynum = nextReadKeynum();
         String keyname = buildKeyName(keynum);
 
         if (writeallfields) {
@@ -602,7 +676,7 @@ public class CoreWorkload extends Workload {
 
     public void doTransactionInsert(DB db) {
         //choose the next key
-        int keynum = keynumGenerator.startInsert();
+        long keynum = keynumGenerator.startInsert();
         try {
             String dbkey = buildKeyName(keynum);
 

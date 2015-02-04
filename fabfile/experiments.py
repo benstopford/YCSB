@@ -1,175 +1,24 @@
-import ycsb
-import time
-import os
-import helpers
-from fabric.api import *
-from helpers import get_db
-from util.print_utils import emphasis, log, clear_log
 from amazonctl.db import db_up
 from amazonctl.db import db_down
 from amazonctl.ec2 import ec2_up
 from charts.table_parser import data_table, column_defs
 from charts.panda_parser import convert_to_panda
 from charts.chart import insert_data_into_chart, throughput
-from conf.workloads import conf
-from conf.hosts import running_db_node_count, running_ycsb_node_count, host_counts, addresses
+from experiment_util import *
 
 
-def delete_server_logs():
-    if running_ycsb_node_count() > 0:
-        execute(
-            ycsb.do_clean,
-            hosts=addresses()['ycsb_public_ip']
-        )
 
-
-def load(db):
-    helpers.reset_base_time()
-    ycsb.load(db)
-    print log('Load has been started: [%s / %s]' % (conf['insertstart'], conf['insertcount']))
-    await_completion(db)
-    run_status_check(db)
-    download_logs(db)
-    delete_server_logs()
-
-
-def run_workload(db, wl):
-    helpers.reset_base_time()
-    execute(
-        ycsb.do_workload,
-        db,
-        workload=wl,
-        hosts=addresses()['ycsb_public_ip']
-    )
-    print log('Workload %s has been started' % wl)
-    await_completion(db)
-    run_status_check(db)
-    download_logs(db)
-    delete_server_logs()
-
-
-def print_tail(db, lines, filter):
-    database = get_db(db)
-    with cd(database['home']):
-        latest_log = ""
-        if len(filter) > 0:
-            latest_log = run("ls -ltr | grep %s | awk 'END{print}' | awk {'print $9'};" % filter)
-        else:
-            latest_log = run("ls -ltr | awk 'END{print}' | awk {'print $9'};")
-        if len(latest_log) > 0:
-            print run('tail -n-%s %s' % (lines, latest_log))
-
-
-def tail(lines="70", db='basic', filter=""):
-    execute(
-        print_tail,
-        db,
-        lines,
-        filter,
-        hosts=addresses()['ycsb_public_ip']
-    )
-
-
-def run_status_check(db):
-    print emphasis('STATUS CHECK START')
-    tail(70, db)
-    print emphasis('STATUS CHECK END')
-
-
-def download_logs(db):
-    execute(
-        ycsb.do_get_log,
-        db,
-        hosts=addresses()['ycsb_public_ip']
-    )
-
-
-def kill_processes():
-    if running_ycsb_node_count() > 0:
-        execute(
-            ycsb.do_kill,
-            hosts=addresses()['ycsb_public_ip']
-        )
-
-
-def ycsb_run_status(db):
-    """ Shows whether the job is:q complete"""
-    database = get_db(db)
-    with cd(database['home']):
-        latest_out_log = run("ls -ltr | grep *.out | awk 'END{print}' | awk {'print $9'};")
-        if len(latest_out_log) > 0:
-
-            # Check for errors
-            latest_err_log = run("ls -ltr | grep .err | awk 'END{print}' | awk {'print $9'};")
-
-            permissible_errors = ''
-            if 'permissablerunerrors' in get_db(db):
-                permissible_errors = " ".join(['| grep -v ' + s for s in get_db(db)['permissablerunerrors']])
-                print permissible_errors
-
-            lines_in_error_log = run('cat %s %s | wc -l' % (latest_err_log, permissible_errors))
-            if int(lines_in_error_log) > 8:
-                ycsb.do_get_log(db)
-                run('tail -n 100 %s ' % latest_err_log)
-                raise Exception('Looks like there is something in the error log: %s : %s lines' % (
-                    latest_err_log, int(lines_in_error_log)))
-
-            # Check for completion
-            complete = run('cat %s | grep "\[OVERALL\]" | wc -l' % latest_out_log)
-            run('tail -n-4 %s' % latest_out_log)
-            if int(complete) > 0:
-                print 'YCSB has completed on %s' % env.host
-                return 1
-    return 0
-
-
-def job_complete(db):
-    # check one node's status
-    first_host = addresses()['ycsb_public_ip'][0]
-    success = execute(
-        ycsb_run_status,
-        db,
-        hosts=first_host
-    )
-
-    # if done check the others
-    if success > 0:
-        result = execute(
-            ycsb_run_status,
-            db,
-            hosts=addresses()['ycsb_public_ip']
-        )
-        success = sum(result.values()) == running_ycsb_node_count()
-        return success
-
-    return 0
-
-
-def await_completion(db):
-    while not job_complete(db):
-        print 'Polling (15) YCSB log files for completion status'
-        time.sleep(15)
-
-
-def archive_logs():
-    with settings(warn_only=True):
-        local('./archlogs.sh')
-
-
-def initialise():
+def _initialise():
     clear_log()
     log('initialising')
-
     kill_processes()
     delete_server_logs()
     archive_logs()
 
 
-def load_action(db):
-    # do the data load
+def _load_action(db):
     load(db)
     conf['insertstart'] = conf['insertstart'] + conf['insertcount']
-    # rebuild the db
     db_down(db)
     db_up(db)
 
@@ -217,17 +66,6 @@ def _run_until_throughput_stabalises(db, action, thread_start=1):
     return thread_count, throughput
 
 
-def find_optimum_threads_for_load(db):
-    conf['insertstart'] = 0
-    conf['insertcount'] = 6 * 1000
-    conf['fieldcount'] = 1
-    conf['fieldlength'] = 1000
-
-    initialise()
-
-    _run_until_throughput_stabalises(db, load_action)
-
-
 def workload_action(workload):
     return lambda db: run_workload(db, workload)
 
@@ -242,29 +80,43 @@ def _load(db, mb=1000):
     load(db)
     log("Load completed %sMB" % mb)
 
-def _find_optimum_threads_for_workload(db, thread_start, workload, execution_time=60):
-    # should run for 90secs
+
+def _set_test_duration(execution_time):
+    # Override relevant setting to ensure we run for the specified execution_time
     conf['operationcount'] = 100000000
     conf['recordcount'] = conf['insertcount']
     conf['maxexecutiontime'] = execution_time
     conf['cardinality'] = (conf['insertcount'] / 10)
+
+
+def _find_optimum_threads_for_workload(db, thread_start, workload, execution_time=60):
+    _set_test_duration(execution_time)
     return _run_until_throughput_stabalises(db, workload_action(workload), thread_start)
 
 
-def find_optimum_threads_for_workload(db, workload='A', thread_start=1):
-    initialise(kill_summary_log)
+def find_max_load_throughput(db):
+    """Measures maximum throughput for the data loading phase"""
+    conf['insertstart'] = 0
+    conf['insertcount'] = 6 * 1000
+    conf['fieldcount'] = 1
+    conf['fieldlength'] = 1000
+    _initialise()
+    _run_until_throughput_stabalises(db, _load_action)
 
+def find_max_workload_throughput(db, workload='A', thread_start=1):
+    """Measures maximum throughput (i.e. optimal number of threads) for a single, specified workload"""
+    _initialise()
     return _find_optimum_threads_for_workload(db, thread_start, workload)
 
 
-def simple_max_load_test_multi_workload(db, thread_start=1, execution_time=60, mb=1000, include_load=True):
-    """Loads specified data into a database """
+def sequential_workloads(db, thread_start=1, execution_time=60, mb=1000, include_load=True):
+    """Measures max throughput for a collection of different workloads"""
     thread_start = int(thread_start)
     execution_time = int(execution_time)
     mb = int(mb)
     include_load = bool(include_load)
 
-    initialise()
+    _initialise()
     log("Starting simple max load test for a %s nodes and datasize of %sMB" % (running_db_node_count(), mb))
 
     results = []
@@ -279,7 +131,7 @@ def simple_max_load_test_multi_workload(db, thread_start=1, execution_time=60, m
     log("Final result was: %s" % results)
 
 
-def node_growth_test(db, start=2, end=8, thread_start=20, workload='H', execution_time=60, mb=100):
+def node_growth(db, start=2, end=8, thread_start=20, workload='H', execution_time=60, mb=100):
     """ Establishes the maximum throughput, for a given workload, running
         on an increasingly larger cluster of machines.
         The test increments the number of machines by one,
@@ -300,7 +152,7 @@ def node_growth_test(db, start=2, end=8, thread_start=20, workload='H', executio
     execution_time = int(execution_time)
     mb = int(mb)
 
-    initialise()
+    _initialise()
     log("Starting node growth test from: %s => %s" % (running_db_node_count(), end))
 
     # Start DB nodes if needed
@@ -341,13 +193,15 @@ def node_growth_test(db, start=2, end=8, thread_start=20, workload='H', executio
     log("Final result was: %s" % results)
 
 
-def data_growth_test(db, iterations=10, mode='run'):
+def data_growth(db, iterations=10, mode='run'):
+    """Increases the amount of data in the database iteratively, measuring and charting the max
+     throughput for each iteration."""
     iter = int(iterations)
 
     log('This test will load approximately %sMB of data spread over %s runs' % (
         conf['insertcount'] * conf['fieldcount'] * conf['fieldlength'] * int(iter) / 1000000, iter))
 
-    initialise()
+    _initialise()
     conf['insertstart'] = 0
 
     if mode != 'run':

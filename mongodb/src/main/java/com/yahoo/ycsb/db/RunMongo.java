@@ -6,10 +6,10 @@ import java.io.FileNotFoundException;
 
 public class RunMongo {
 
-    public static final int insertCount = 10000;
-    public static final int operationCount = 10000;
+    public static final int insertCount = 1000;
+    public static final int operationCount = 1000;
     public static final int threadCount = 100;
-    public static final int recordCount = 10000;
+    public static final int recordCount = 1000;
     public static final int fieldCount = 10;
     public static final int fieldLength = 20;
     public static final int cardinality = 1000;
@@ -43,7 +43,7 @@ public class RunMongo {
             "-db",
             "com.yahoo.ycsb.db.MongoDbClient",
             "-s",
-            "-p", "mongodb.url=54.154.71.170:27028,54.154.63.64:27028",
+            "-p", "mongodb.url=54.154.228.113:27028",
             "-P", "workloads/workloadh",
             "-p", "updateretrycount=1000",
             "-p", "mongodb.writeConcern=normal",

@@ -2,13 +2,12 @@ root = '/opt/ycsb'  # root of YCSB installation
 # TIME_DURATION = 20*60  #seconds
 
 count = 1000
-cardinality = count / 10
 conf = {
     # global YSCB properties
     'operationcount': count,  # Total operations (writes or reads during a workload)
     'insertcount': count,  #How many objects to write during load phase
     'recordcount': count,  #Specifies the keyspaace for reads
-    'cardinality': cardinality,
+    # 'cardinality': count / 10,
 
     # 'maxexecutiontime': 90,
 
@@ -16,8 +15,8 @@ conf = {
     'fieldlength': 100,  # either exactly or approximately this length depending on fieldlengthdistribution
     'fieldlengthdistribution': 'constant',  # can also be zipfian or uniform but zipfian isn't working currently
 
-    'valuegenerator': 'queryable',
-    'queryfield': 'field0',
+    # 'valuegenerator': 'queryable',
+    # 'queryfield': 'field0',
 
 
 

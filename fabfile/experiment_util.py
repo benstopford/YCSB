@@ -48,6 +48,8 @@ def run_status_check(db):
     print emphasis('STATUS CHECK END')
 
 def download_logs(db):
+    if not os.path.exists('logs'):
+        os.makedirs('logs')
     execute(
         ycsb.do_get_log,
         db,
